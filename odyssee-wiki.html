@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Die Odyssee Homers – ein offline-fähiges Wiki: Ablauf aller 24 Gesänge, Irrfahrt-Timeline, Personen, Orte (historisch und mythisch), Hintergrund, Erzählstruktur, Deutung, Glossar, Rezeption in Literatur, Oper, Malerei und Film sowie verifizierte Quellen.">
+<title>Die Odyssee · Ein Wiki</title>
+<script>
+/* Theme vor dem Rendern setzen – vermeidet Aufblitzen. localStorage in try/catch (falls blockiert). */
+(function () {
+  try {
+    var t = localStorage.getItem('odyssee-theme');
+    if (t !== 'day' && t !== 'night') {
+      t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'day' : 'night';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'night');
+  }
+})();
+</script>
+<style>
+/* ============================================================
+   TOKENS – Zwei Paletten: „Nacht" (Ägäis bei Nacht, Schwarzfigur-
+   Keramik) und „Tag" (sonnengebleichter Kalkstein, Terrakotta).
+   ============================================================ */
+:root, [data-theme="night"] {
+  --bg:        #0B161E;
+  --bg-1:      #0E212C;
+  --bg-2:      #091219;
+  --panel:     #10222E;
+  --panel-2:   #0E1E28;
+  --raised:    #16323F;
+  --card:      #12242F;
+  --line:      rgba(236,227,206,0.13);
+  --line-2:    rgba(236,227,206,0.22);
+  --ink:       #ECE3CE;
+  --ink-2:     #C7BDA3;
+  --muted:     #97907C;
+  --terra:     #D3683A;
+  --terra-2:   #EC8956;
+  --gold:      #CBA24E;
+  --verd:      #52A2A2;
+  --oxblood:   #A73E31;
+  --star:      rgba(236,227,206,0.55);
+  --shadow:    0 18px 44px rgba(0,0,0,0.42);
+  --medal-bg:  #0B161E;
+  --sun-op:    0;
+  --moon-op:   1;
+}
+[data-theme="day"] {
+  --bg:        #F0E5D0;
+  --bg-1:      #F4ECDA;
+  --bg-2:      #E7D9BF;
+  --panel:     #F8F1E1;
+  --panel-2:   #F4ECDA;
+  --raised:    #ECE0C8;
+  --card:      #F8F1E1;
+  --line:      rgba(43,32,20,0.15);
+  --line-2:    rgba(43,32,20,0.26);
+  --ink:       #1F2E36;
+  --ink-2:     #3F5157;
+  --muted:     #786F5B;
+  --terra:     #B24A1E;
+  --terra-2:   #963E17;
+  --gold:      #8F6F24;
+  --verd:      #2C787A;
+  --oxblood:   #8A2C22;
+  --star:      rgba(43,32,20,0.10);
+  --shadow:    0 16px 40px rgba(90,68,34,0.16);
+  --medal-bg:  #F0E5D0;
+  --sun-op:    1;
+  --moon-op:   0;
+}
+
+/* ============================================================ RESET / BASE */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
+  font-size: clamp(1.02rem, 0.96rem + 0.4vw, 1.16rem);
+  line-height: 1.72;
+  transition: background-color .35s ease, color .35s ease;
+  overflow-x: hidden;
+}
+h1,h2,h3,h4 { font-weight: 700; line-height: 1.12; margin: 0; }
+p { margin: 0 0 1em; }
+a { color: var(--terra); text-decoration: none; }
+a:hover { color: var(--terra-2); text-decoration: underline; }
+:focus-visible { outline: 2.5px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
+img { max-width: 100%; }
+
+.label {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+.sans { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif; }
+.muted { color: var(--muted); }
+.gr { color: var(--gold); font-style: normal; }
+
+/* ============================================================ PROGRESS BAR */
+.progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+  background: linear-gradient(90deg, var(--verd), var(--terra), var(--gold));
+  z-index: 60; transition: width .08s linear;
+}
+
+/* ============================================================ NAV */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1120px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 34px);
+  display: flex; align-items: center; gap: 12px; height: 56px;
+}
+.brand { display: flex; align-items: center; gap: 9px; flex: none; }
+.brand svg { width: 22px; height: 22px; }
+.brand b {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.86rem; font-weight: 700; letter-spacing: 0.02em; color: var(--ink);
+  white-space: nowrap;
+}
+.menu {
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+  -ms-overflow-style: none; margin-left: auto; -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+}
+.menu::-webkit-scrollbar { display: none; }
+.menu a {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--ink-2); padding: 7px 11px; border-radius: 999px; white-space: nowrap;
+  text-decoration: none; transition: color .2s, background-color .2s;
+}
+.menu a:hover { color: var(--ink); background: var(--raised); text-decoration: none; }
+.menu a.active { color: var(--bg); background: var(--terra); }
+[data-theme="day"] .menu a.active { color: #fff; }
+.theme-toggle {
+  flex: none; margin-left: 4px; width: 40px; height: 40px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: var(--panel); color: var(--ink);
+  cursor: pointer; display: grid; place-items: center; position: relative;
+  transition: background-color .25s, border-color .25s;
+}
+.theme-toggle:hover { background: var(--raised); }
+.theme-toggle svg { width: 20px; height: 20px; position: absolute; transition: opacity .3s, transform .3s; }
+.theme-toggle .i-sun  { opacity: var(--sun-op);  transform: rotate(calc((1 - var(--sun-op)) * -90deg)); }
+.theme-toggle .i-moon { opacity: var(--moon-op); transform: rotate(calc((1 - var(--moon-op)) * 90deg)); }
+
+/* ============================================================ LAYOUT */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 34px); }
+section { scroll-margin-top: 68px; }
+.block { padding: clamp(40px, 7vw, 84px) 0; border-top: 1px solid var(--line); }
+.prose { max-width: 68ch; }
+.lead { font-size: clamp(1.12rem, 1rem + 0.7vw, 1.34rem); color: var(--ink-2); max-width: 66ch; }
+
+.kicker { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.kicker .n {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.72rem; font-weight: 700; color: var(--terra);
+  border: 1px solid var(--terra); border-radius: 999px; padding: 2px 9px; letter-spacing: .05em;
+}
+h2.h { font-size: clamp(1.8rem, 1.2rem + 2.6vw, 2.9rem); letter-spacing: -0.01em; margin-bottom: 0.5em; }
+h3.sub { font-size: clamp(1.18rem, 1rem + 0.7vw, 1.45rem); color: var(--ink); margin: 1.8em 0 0.5em; }
+h3.sub .gr { font-size: 0.82em; margin-left: .4em; }
+
+/* ============================================================ HERO */
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(1200px 520px at 78% -8%, color-mix(in srgb, var(--terra) 16%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 8% 108%, color-mix(in srgb, var(--verd) 15%, transparent), transparent 62%),
+    linear-gradient(165deg, var(--bg-1), var(--bg-2));
+}
+.stars { position: absolute; inset: 0; z-index: 0; opacity: .9;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 22%, var(--star), transparent),
+    radial-gradient(1.2px 1.2px at 28% 64%, var(--star), transparent),
+    radial-gradient(1.5px 1.5px at 46% 34%, var(--star), transparent),
+    radial-gradient(1px 1px at 62% 74%, var(--star), transparent),
+    radial-gradient(1.6px 1.6px at 74% 18%, var(--star), transparent),
+    radial-gradient(1.1px 1.1px at 86% 52%, var(--star), transparent),
+    radial-gradient(1.3px 1.3px at 92% 30%, var(--star), transparent),
+    radial-gradient(1px 1px at 38% 88%, var(--star), transparent);
+}
+.hero-inner { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto;
+  padding: clamp(52px, 10vw, 108px) clamp(14px, 4vw, 34px) clamp(40px, 7vw, 80px); }
+.hero .eyebrow {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  text-transform: uppercase; letter-spacing: 0.24em; font-size: 0.72rem; font-weight: 600;
+  color: var(--gold); margin-bottom: 22px;
+}
+.greek {
+  font-size: clamp(0.86rem, 0.8rem + 0.5vw, 1.05rem); letter-spacing: 0.42em;
+  color: var(--terra); font-weight: 700; margin-bottom: 6px; padding-left: 0.42em;
+}
+.hero h1 {
+  font-size: clamp(3rem, 1.5rem + 10vw, 6.4rem); letter-spacing: -0.02em; line-height: 0.98;
+  margin: 0 0 22px;
+}
+.hero h1 .thin { display: block; font-weight: 400; font-style: italic; color: var(--ink-2);
+  font-size: 0.42em; letter-spacing: 0; margin-top: 0.35em; }
+.hero .intro { max-width: 60ch; color: var(--ink-2); font-size: clamp(1.1rem, 1rem + 0.6vw, 1.3rem); }
+
+.proem {
+  margin: 34px 0 0; padding: 22px 26px; max-width: 60ch;
+  border-left: 3px solid var(--terra);
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  border-radius: 4px;
+}
+.proem p { font-style: italic; font-size: clamp(1.06rem, 1rem + 0.6vw, 1.3rem); color: var(--ink);
+  margin: 0 0 0.7em; line-height: 1.65; }
+.proem .cred {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.78rem; color: var(--muted); font-style: normal; letter-spacing: .02em;
+}
+.proem .cred a { color: var(--gold); }
+
+/* ============================================================ STECKBRIEF */
+.steckbrief {
+  margin-top: 30px; border: 1px solid var(--line-2); border-radius: 12px;
+  background: var(--panel); overflow: hidden;
+}
+.steckbrief .sb-head {
+  padding: 14px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-grid { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 620px) { .sb-grid { grid-template-columns: 1fr 1fr; } }
+.sb-row { display: flex; gap: 14px; padding: 12px 20px; border-top: 1px solid var(--line); }
+.sb-grid > .sb-row:nth-child(-n+1) { border-top: none; }
+@media (min-width: 620px) { .sb-grid > .sb-row:nth-child(2) { border-top: none; } }
+.sb-k {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+  flex: 0 0 8.5em; padding-top: 3px;
+}
+.sb-v { color: var(--ink); font-size: 0.98rem; }
+.sb-v .gr { font-size: 0.9em; }
+
+/* ============================================================ ANLEITUNG */
+.guide {
+  border: 1px solid var(--line-2); border-radius: 14px; background: var(--panel);
+  padding: clamp(20px, 4vw, 32px); box-shadow: var(--shadow);
+}
+.guide h2 { font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.9rem); margin-bottom: 6px; }
+.guide .glist { display: grid; gap: 16px; margin-top: 20px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .guide .glist { grid-template-columns: 1fr 1fr; } }
+.gitem { display: flex; gap: 13px; }
+.gitem .ic { flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--terra) 16%, transparent); color: var(--terra); }
+.gitem .ic svg { width: 18px; height: 18px; }
+.gitem h4 { font-size: 1rem; margin-bottom: 2px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif; }
+.gitem p { font-size: 0.92rem; color: var(--ink-2); margin: 0; line-height: 1.55; }
+
+/* ============================================================ VOYAGE / REISE */
+.medias {
+  margin: 6px 0 30px; padding: 16px 20px; border-radius: 10px;
+  background: color-mix(in srgb, var(--verd) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verd) 34%, transparent);
+  font-size: 0.98rem; color: var(--ink); max-width: 72ch;
+}
+.medias b { color: var(--verd); }
+
+.voyage { position: relative; margin-top: 8px; }
+.voyage::before {
+  content: ""; position: absolute; left: 26px; top: 26px; bottom: 26px; width: 3px;
+  background: linear-gradient(var(--verd), var(--terra), var(--gold));
+  opacity: .55; border-radius: 3px;
+}
+.port { position: relative; margin: 0; }
+.port summary {
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: 54px 1fr auto;
+  align-items: start; gap: 14px; padding: 11px 4px; border-radius: 10px;
+  transition: background-color .2s;
+}
+.port summary::-webkit-details-marker { display: none; }
+.port summary:hover { background: var(--raised); }
+.medal {
+  grid-row: 1; width: 54px; height: 54px; border-radius: 50%; position: relative; z-index: 2;
+  background: var(--medal-bg); border: 2px solid var(--gold);
+  display: grid; place-items: center; color: var(--gold); font-weight: 700;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 1.1rem; box-shadow: 0 0 0 5px var(--bg);
+  transition: border-color .25s, color .25s, transform .25s;
+}
+.port[open] .medal { border-color: var(--terra); color: var(--terra); transform: scale(1.06); }
+.port .start .medal, .port .end .medal { }
+.port .pname {
+  padding-top: 6px;
+}
+.port .pname .t { font-size: clamp(1.08rem, 1rem + 0.5vw, 1.28rem); color: var(--ink); font-weight: 700; }
+.port .pname .s {
+  display: block; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.82rem; color: var(--terra); letter-spacing: .02em; margin-top: 2px; font-weight: 600;
+}
+.port .chev { align-self: center; color: var(--muted); transition: transform .25s; padding-top: 6px; }
+.port[open] .chev { transform: rotate(90deg); }
+.port .chev svg { width: 16px; height: 16px; display: block; }
+.port-body {
+  margin: 0 4px 12px 68px; padding: 4px 2px 0; color: var(--ink-2);
+  font-size: 0.98rem; max-width: 68ch;
+}
+.port-body .tag {
+  display: inline-block; margin-top: 8px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold);
+  border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 10px;
+}
+
+/* ============================================================ KARTE */
+.mapbox { margin: 26px 0 6px; border: 1px solid var(--line-2); border-radius: 14px;
+  background: var(--panel-2); overflow: hidden; box-shadow: var(--shadow); }
+.map-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+.map-bar .btn {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: .02em; color: var(--ink);
+  background: var(--raised); border: 1px solid var(--line-2); border-radius: 999px;
+  padding: 7px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: background-color .2s, color .2s, border-color .2s; }
+.map-bar .btn:hover { border-color: var(--terra); }
+.map-bar .btn svg { width: 13px; height: 13px; }
+.map-bar .btn.on { background: var(--terra); border-color: var(--terra); color: var(--medal-bg); }
+[data-theme="day"] .map-bar .btn.on { color: #fff; }
+.map-bar .spacer { flex: 1 1 auto; }
+.zoomer { display: inline-flex; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; }
+.zoomer button { width: 34px; height: 32px; border: none; background: var(--raised); color: var(--ink);
+  cursor: pointer; font-size: 1rem; line-height: 1; display: grid; place-items: center;
+  border-left: 1px solid var(--line); font-family: inherit; }
+.zoomer button:first-child { border-left: none; }
+.zoomer button:hover { background: var(--terra); color: var(--medal-bg); }
+[data-theme="day"] .zoomer button:hover { color: #fff; }
+.zoomer svg { width: 15px; height: 15px; }
+
+.map-stage { position: relative; }
+.map-svg { display: block; width: 100%; height: auto; touch-action: pan-y; cursor: grab;
+  background: var(--bg-2); aspect-ratio: 1000 / 682; }
+.map-svg.drag { cursor: grabbing; }
+[data-theme="night"] .map-sea { fill: #071119; }
+[data-theme="day"]   .map-sea { fill: #DCE9E4; }
+[data-theme="night"] .map-land { fill: #1B333D; stroke: #4E7079; }
+[data-theme="day"]   .map-land { fill: #E5D5B4; stroke: #A8916A; }
+.map-land { stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.map-grat { fill: none; stroke: var(--line); stroke-width: 0.5; vector-effect: non-scaling-stroke; opacity: .5; }
+
+.leg { fill: none; stroke: var(--terra); stroke-width: 2.4; stroke-linecap: round;
+  stroke-linejoin: round; opacity: .42; vector-effect: non-scaling-stroke;
+  transition: opacity .35s, stroke-width .35s; }
+.leg.lit { opacity: 1; stroke-width: 3.4; stroke: var(--terra-2); }
+.leg.done { opacity: .8; }
+.leg-aiolos { stroke: var(--gold); stroke-dasharray: 7 5; }
+.leg-aiolos.lit { stroke: var(--gold); }
+.leg-nekyia { stroke: #9B7FC4; stroke-dasharray: 2.5 5; }
+[data-theme="day"] .leg-nekyia { stroke: #6A4C9C; }
+.leg-nekyia.lit { stroke: #B79BE0; }
+[data-theme="day"] .leg-nekyia.lit { stroke: #52308A; }
+.leg-tel { stroke: var(--verd); opacity: .75; }
+.leg-tel-land { stroke-dasharray: 2 4.5; }
+.tel-layer { opacity: 0; pointer-events: none; transition: opacity .35s; }
+.tel-layer.on { opacity: 1; }
+
+.mlbl { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  text-anchor: middle; pointer-events: none; font-weight: 600; }
+.mlbl-sea { font-size: 11px; letter-spacing: 3px; fill: var(--muted); opacity: .62; font-style: italic; }
+.mlbl-land { font-size: 10px; letter-spacing: 2.4px; fill: var(--ink-2); opacity: .5; }
+
+.mk { cursor: pointer; }
+.mk-halo { fill: var(--terra); opacity: 0; transition: opacity .3s; }
+.mk-dot { fill: var(--terra); stroke: var(--bg-2); stroke-width: 2; transition: fill .25s; }
+.mk-hist .mk-dot { fill: var(--gold); }
+.mk-edge .mk-dot { fill: #9B7FC4; }
+[data-theme="day"] .mk-edge .mk-dot { fill: #6A4C9C; }
+.mk-tel .mk-dot { fill: var(--verd); }
+.mk-num { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 8.5px; font-weight: 700; text-anchor: middle; fill: var(--bg-2); pointer-events: none; }
+.mk-lbl { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 10.5px; font-weight: 700; fill: var(--ink); paint-order: stroke;
+  stroke: var(--bg-2); stroke-width: 3px; stroke-linejoin: round;
+  opacity: 0; pointer-events: none; transition: opacity .2s; }
+.mk:hover .mk-lbl, .mk.on .mk-lbl, .mk:focus-visible .mk-lbl { opacity: 1; }
+.mk:hover .mk-halo, .mk:focus-visible .mk-halo { opacity: .22; }
+.mk.on .mk-halo { opacity: .3; }
+.mk.on .mk-dot { stroke: var(--ink); }
+.mk.ping .mk-halo { animation: ping 1s ease-out; }
+@keyframes ping { 0% { opacity: .55; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.7); } }
+@media (prefers-reduced-motion: reduce) { .mk.ping .mk-halo { animation: none; } }
+
+.ship { pointer-events: none; opacity: 0; transition: opacity .3s; }
+.ship.on { opacity: 1; }
+.ship-hull { fill: var(--ink); stroke: var(--bg-2); stroke-width: 1.2; }
+.ship-sail { fill: var(--terra-2); }
+
+.map-panel { border-top: 1px solid var(--line); background: var(--panel);
+  padding: 14px 16px 15px; position: relative; }
+.map-panel .phint { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.86rem; color: var(--muted); margin: 0; }
+.map-panel .pbody { display: none; }
+.map-panel.on .pbody { display: block; }
+.map-panel.on .phint { display: none; }
+.map-panel .pt { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.map-panel h4 { font-size: 1.04rem; color: var(--ink); }
+.map-panel .pg { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: .09em; color: var(--gold);
+  border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.map-panel .po { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.74rem; color: var(--verd); margin: 5px 0 6px; font-weight: 600; }
+.map-panel .px { font-size: 0.89rem; color: var(--ink-2); line-height: 1.5; margin: 0; }
+.map-panel .pjump { margin-top: 9px; display: inline-flex; align-items: center; gap: 5px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.78rem; font-weight: 600; color: var(--terra); background: none; border: none;
+  padding: 0; cursor: pointer; }
+.map-panel .pjump:hover { color: var(--terra-2); text-decoration: underline; }
+.map-panel .pjump svg { width: 12px; height: 12px; }
+
+
+.map-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 11px 14px;
+  border-top: 1px solid var(--line); background: var(--panel);
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.74rem; color: var(--ink-2); }
+.map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.map-legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex: none; }
+.map-legend i.ln { width: 17px; height: 0; border-radius: 0; border-top: 2.5px solid; }
+.lg-hist { background: var(--gold); } .lg-myth { background: var(--terra); }
+.lg-edge { background: #9B7FC4; } [data-theme="day"] .lg-edge { background: #6A4C9C; }
+.lg-tel { background: var(--verd); }
+.lg-route { border-color: var(--terra); } .lg-wind { border-color: var(--gold); border-top-style: dashed; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+.chip { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.76rem; font-weight: 600; color: var(--ink-2); background: var(--card);
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px 5px 6px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: border-color .2s, color .2s; }
+.chip b { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.68rem; color: var(--medal-bg); background: var(--terra); flex: none; }
+[data-theme="day"] .chip b { color: #fff; }
+.chip-hist b { background: var(--gold); }
+.chip-edge b { background: #9B7FC4; }
+[data-theme="day"] .chip-edge b { background: #6A4C9C; }
+.chip:hover { border-color: var(--terra); color: var(--ink); }
+.chip.on { border-color: var(--terra); color: var(--ink); background: var(--raised); }
+
+.map-note { font-size: 0.85rem; color: var(--muted); margin: 12px 0 0; max-width: 74ch;
+  border-left: 2px solid var(--line-2); padding-left: 13px; }
+.map-note b { color: var(--ink-2); }
+
+/* ============================================================ HANDLUNG / GESÄNGE */
+.part { margin-top: 30px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); overflow: hidden; }
+.part .ph { padding: 16px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.part .ph .pk {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--terra); font-weight: 700;
+}
+.part .ph h3 { font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem); margin: 3px 0 4px; }
+.part .ph .pi { font-size: 0.94rem; color: var(--ink-2); margin: 0; max-width: 74ch; }
+.cantos { padding: 6px 8px 10px; }
+.canto { display: grid; grid-template-columns: 40px 1fr; gap: 12px; padding: 9px 12px; border-radius: 8px; }
+.canto:hover { background: var(--raised); }
+.canto .cn {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.82rem; font-weight: 700; color: var(--gold); padding-top: 2px;
+}
+.canto .cx { font-size: 0.95rem; color: var(--ink-2); }
+.canto .cx b { color: var(--ink); font-weight: 700; }
+
+/* ============================================================ CARDS (Personen) */
+.group-label { margin: 30px 0 12px; display: flex; align-items: center; gap: 10px; }
+.group-label .l {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.9rem; font-weight: 700; letter-spacing: .04em; color: var(--ink);
+}
+.group-label .rule { flex: 1; height: 1px; background: var(--line-2); }
+.grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 540px) { .grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+.card {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--card);
+  padding: 16px 17px; transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--line-2); box-shadow: var(--shadow); }
+.card h4 { font-size: 1.08rem; color: var(--ink); margin-bottom: 1px; }
+.card .who {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.74rem; text-transform: uppercase; letter-spacing: .07em; color: var(--terra);
+  font-weight: 600; margin-bottom: 8px; display: block;
+}
+.card p { font-size: 0.92rem; color: var(--ink-2); margin: 0; line-height: 1.55; }
+.card .gr { font-size: 0.82em; }
+
+/* ============================================================ ORTE (split) */
+.split { display: grid; gap: 22px; grid-template-columns: 1fr; margin-top: 8px; }
+@media (min-width: 860px) { .split { grid-template-columns: 1fr 1fr; align-items: start; } }
+.col-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--line-2);
+}
+.col-head .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.col-head .hist { background: var(--gold); }
+.col-head .myth { background: var(--terra); }
+.col-head h3 { font-size: 1.12rem; }
+.place { padding: 13px 0; border-top: 1px solid var(--line); }
+.place:first-of-type { border-top: none; }
+.place h4 { font-size: 1.02rem; color: var(--ink); }
+.place .loc {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.76rem; color: var(--verd); font-weight: 600; display: block; margin: 2px 0 5px;
+}
+.place p { font-size: 0.92rem; color: var(--ink-2); margin: 0; line-height: 1.55; }
+
+/* ============================================================ REZEPTION */
+.cat { margin-top: 26px; }
+.cat > h3 { font-size: clamp(1.18rem, 1rem + 0.6vw, 1.42rem); margin-bottom: 4px; }
+.cat > .ci { font-size: 0.95rem; color: var(--ink-2); max-width: 74ch; margin-bottom: 14px; }
+.works { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .works { grid-template-columns: 1fr 1fr; } }
+.work {
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+  padding: 13px 15px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline;
+}
+.work .yr {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",ui-sans-serif,system-ui,sans-serif;
+  font-size: 0.78rem; font-weight: 700; color: var(--gold); white-space: nowrap;
+}
+.work .wx { font-size: 0.93rem; color: var(--ink-2); line-height: 1.5; }
+.work .wx b { color: var(--ink); }
+.work .wx i { color: var(--terra); font-style: italic; }
+
+/* ============================================================ GLOSSAR */
+.glossary { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 8px; }
+@media (min-width: 720px) { .glossary { grid-template-columns: 1fr 1fr; } }
+.term { border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 13px 16px; }
+.term dt { font-weight: 700; color: var(--ink); font-size: 1rem; }
+.term dt .gr { font-size: 0.82em; margin-left: .35em; }
+.term dd { margin: 3px 0 0; font-size: 0.9rem; color: var(--ink-2); line-height: 1.5; }
+
+/* ============================================================ QUELLEN */
+.lgroup { margin-top: 24px; }
+.lgroup > h3 { font-size: 1.1rem; margin-bottom: 4px; display: flex; align-items: center; gap: 9px; }
+.lgroup > .li { font-size: 0.92rem; color: var(--muted); margin-bottom: 12px; max-width: 72ch; }
+.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.links li {
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+  padding: 11px 15px; transition: border-color .2s, background-color .2s;
+}
+.links li:hover { border-color: var(--terra); }
+.links a { font-weight: 700; color: var(--ink); font-size: 0.98rem; }
+.links a:hover { color: var(--terra); }
+.links .u {
+  display: block; font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size: 0.74rem; color: var(--verd); margin-top: 2px; word-break: break-all; overflow-wrap: anywhere;
+}
+.links .d { font-size: 0.86rem; color: var(--ink-2); margin-top: 4px; }
+.reflist { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 7px; }
+.reflist li { font-size: 0.92rem; color: var(--ink-2); padding-left: 16px; position: relative; }
+.reflist li::before { content: "—"; position: absolute; left: 0; color: var(--terra); }
+.reflist b { color: var(--ink); }
+
+/* ============================================================ WAVE DIVIDER */
+.wave { display: block; width: 100%; height: 26px; color: var(--line-2); margin: 4px 0; }
+
+/* ============================================================ FOOTER */
+footer { border-top: 1px solid var(--line); padding: 40px 0 60px; }
+footer .fx { max-width: 70ch; color: var(--muted); font-size: 0.9rem; }
+footer .fx b { color: var(--ink-2); }
+footer .disc {
+  margin-top: 16px; font-size: 0.82rem; color: var(--muted);
+  border-left: 2px solid var(--line-2); padding-left: 14px;
+}
+
+/* ============================================================ TO TOP */
+.toTop {
+  position: fixed; right: 18px; bottom: 18px; z-index: 40; width: 46px; height: 46px;
+  border-radius: 50%; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink);
+  display: grid; place-items: center; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .3s, transform .3s, background-color .25s; transform: translateY(8px);
+  box-shadow: var(--shadow);
+}
+.toTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.toTop:hover { background: var(--raised); }
+.toTop svg { width: 20px; height: 20px; }
+
+/* ============================================================ REVEAL */
+.reveal { opacity: 1; }
+.anim .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.anim .reveal.in { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<!-- ============================ NAV ============================ -->
+<nav class="nav" aria-label="Abschnitte">
+  <div class="nav-inner">
+    <span class="brand" aria-hidden="true">
+      <!-- Kompass-Stern -->
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z" fill="currentColor" opacity=".9" style="color:var(--terra)"/><circle cx="12" cy="12" r="2" fill="var(--gold)"/></svg>
+      <b>Die Odyssee</b>
+    </span>
+    <div class="menu" id="menu">
+      <a href="#anleitung">Anleitung</a>
+      <a href="#ueberblick">Überblick</a>
+      <a href="#reise">Karte &amp; Reise</a>
+      <a href="#handlung">Handlung</a>
+      <a href="#personen">Personen</a>
+      <a href="#orte">Orte</a>
+      <a href="#hintergrund">Hintergrund</a>
+      <a href="#struktur">Struktur</a>
+      <a href="#deutung">Deutung</a>
+      <a href="#glossar">Glossar</a>
+      <a href="#rezeption">Rezeption</a>
+      <a href="#quellen">Quellen</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Zwischen Tag- und Nachtmodus wechseln" aria-pressed="false" title="Tag / Nacht">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4 7 7 0 1020 14.5z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Homer · Epos in 24 Gesängen · um 700 v.&nbsp;Chr.</div>
+    <div class="greek">ΟΔΥΣΣΕΙΑ</div>
+    <h1>Die Odyssee
+      <span class="thin">Zehn Jahre Krieg. Zehn Jahre Meer. Ein Weg nach Hause.</span>
+    </h1>
+    <p class="intro">Das älteste Abenteuer der abendländischen Literatur: die Irrfahrt des Odysseus, König von Ithaka, vom zerstörten Troja zurück zu Frau, Sohn und Insel – durch ein Meer voller Ungeheuer, Zauberinnen und Göttergunst. Dieses Wiki führt durch Ablauf, Personen, Orte, Hintergrund, Deutung und die spätere Wirkung in Literatur, Oper, Malerei und Film.</p>
+
+    <blockquote class="proem">
+      <p>„Sage mir, Muse, die Taten des vielgewanderten Mannes,<br>
+      Welcher so weit geirrt nach der heiligen Troja Zerstörung,<br>
+      Vieler Menschen Städte gesehn und Sitte gelernt hat<br>
+      Und auf dem Meere so viel unnennbare Leiden erduldet,<br>
+      Seine Seele zu retten und seiner Freunde Zurückkunft."</p>
+      <span class="cred">Odyssee I, 1–5 · Übersetzung Johann Heinrich Voß (1781), gemeinfrei · <a href="http://www.zeno.org/Literatur/M/Homer/Epen/Odyssee">Volltext bei zeno.org</a></span>
+    </blockquote>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============================ ANLEITUNG ============================ -->
+<section id="anleitung" class="block reveal" style="border-top:none;">
+  <div class="guide">
+    <span class="label">So nutzt du dieses Wiki</span>
+    <h2 style="margin-top:8px;">Anleitung</h2>
+    <p class="muted" style="margin:6px 0 0; font-size:0.96rem;">Die Seite ist eine einzige Datei ohne Internet­abhängigkeit – sie funktioniert vollständig offline, auch im Flugzeug oder im Garten ohne Netz.</p>
+    <div class="glist">
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+        <div><h4>Navigieren</h4><p>Die Leiste oben springt zu jedem Abschnitt. Auf dem Handy lässt sie sich seitlich wischen. Der aktive Abschnitt ist farbig hervorgehoben.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M20 12h2M2 12h2"/></svg></span>
+        <div><h4>Tag &amp; Nacht</h4><p>Der Knopf rechts oben (Sonne/Mond) schaltet zwischen hellem und dunklem Modus. Die Wahl wird – wenn dein Browser es zulässt – gemerkt.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg></span>
+        <div><h4>Karte erkunden</h4><p>Unter <b>Karte &amp; Reise</b> liegt eine interaktive Mittelmeerkarte: Punkte antippen, mit zwei Fingern zoomen, ziehen zum Verschieben &ndash; oder die ganze Reise abspielen lassen.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <div><h4>Stationen aufklappen</h4><p>Im Abschnitt <b>Reise</b> tippst du auf eine Station der Irrfahrt, um Beschreibung und Gesang-Verweis zu öffnen. Erneutes Tippen schließt sie.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span>
+        <div><h4>Alle 24 Gesänge</h4><p><b>Handlung</b> zeigt den vollständigen Ablauf, in vier Teile gegliedert – jeder Gesang mit Ein-Satz-Zusammenfassung.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+        <div><h4>Fachbegriffe</h4><p>Das <b>Glossar</b> erklärt die griechischen Schlüsselwörter (Nostos, Xenia, Metis …), die im Text immer wieder auftauchen.</p></div>
+      </div>
+      <div class="gitem">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg></span>
+        <div><h4>Quellen zum Vertiefen</h4><p>Ganz unten stehen geprüfte Links (Volltexte griechisch/deutsch, Übersetzungen, Verfilmungen) samt Adresse zum Antippen oder Kopieren.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ÜBERBLICK ============================ -->
+<section id="ueberblick" class="block reveal">
+  <div class="kicker"><span class="n">01</span><span class="label">Worum es geht</span></div>
+  <h2 class="h">Überblick &amp; Steckbrief</h2>
+  <div class="prose">
+    <p class="lead">Die Odyssee erzählt keine Schlacht, sondern eine Heimkehr. Ihr Held siegt nicht durch Stärke, sondern durch Geist – ein Verstand, so wandlungsfähig wie ein Chamäleon, der sich jeder Lage anpasst.</p>
+    <p>Zehn Jahre nach dem Fall Trojas ist Odysseus als Einziger der griechischen Anführer noch nicht heimgekehrt. Er strandet fern der Welt bei der Nymphe Kalypso, während zu Hause auf Ithaka über hundert dreiste Freier um seine Frau Penelope werben, sein Gut verprassen und seinem Sohn Telemachos nach dem Leben trachten. Von hier – im zehnten Jahr, mitten im Geschehen – setzt das Epos ein. Erst rückblickend, als Ich-Erzählung am Hof der Phäaken, entfalten sich die berühmten Abenteuer: Kyklop, Windschlauch, Zauberin Kirke, die Totenwelt, die Sirenen, Skylla und Charybdis, die Rinder der Sonne. Am Ende steht die Heimkehr des als Bettler Verkleideten, der Bogenwettkampf, die Rache an den Freiern und die Wiedererkennung der Gatten.</p>
+    <p>Neben dem Mythos verhandelt das Werk sehr Menschliches: Treue und Versuchung, Gastrecht und Übermut, Identität und Verstellung, den Wunsch nach Heimat gegen das Angebot der Unsterblichkeit. Deshalb ist die Odyssee bis heute lebendig – im Wort „Odyssee" selbst wie in unzähligen Neudichtungen.</p>
+  </div>
+
+  <div class="steckbrief" aria-label="Steckbrief">
+    <div class="sb-head"><span class="label">Steckbrief</span></div>
+    <div class="sb-grid">
+      <div class="sb-row"><div class="sb-k">Autor</div><div class="sb-v">Homer (zugeschrieben)</div></div>
+      <div class="sb-row"><div class="sb-k">Entstehung</div><div class="sb-v">um 700 v.&nbsp;Chr. (8./7.&nbsp;Jh.)</div></div>
+      <div class="sb-row"><div class="sb-k">Ursprache</div><div class="sb-v">Homerisches Griechisch (ionisch, mit äolischen Formen)</div></div>
+      <div class="sb-row"><div class="sb-k">Versmaß</div><div class="sb-v">daktylischer Hexameter</div></div>
+      <div class="sb-row"><div class="sb-k">Umfang</div><div class="sb-v">24 Gesänge, rund 12.100 Verse</div></div>
+      <div class="sb-row"><div class="sb-k">Gattung</div><div class="sb-v">Heldenepos · Nostos (Heimkehrdichtung)</div></div>
+      <div class="sb-row"><div class="sb-k">Erzählte Zeit</div><div class="sb-v">die letzten ~40 Tage der Irrfahrt (mit Rückblenden über 10 Jahre)</div></div>
+      <div class="sb-row"><div class="sb-k">Held</div><div class="sb-v">Odysseus <span class="gr">(Ὀδυσσεύς)</span>, König von Ithaka</div></div>
+    </div>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ REISE ============================ -->
+<section id="reise" class="block reveal">
+  <div class="kicker"><span class="n">02</span><span class="label">Die Irrfahrten</span></div>
+  <h2 class="h">Die Reise: 14 Stationen</h2>
+  <p class="lead">Von Troja nach Ithaka – die Route der zehn Jahre, chronologisch geordnet.</p>
+  <div class="medias">
+    <b>Wichtig zur Erzählweise:</b> Das Epos beginnt <i>in medias res</i> – im zehnten Jahr, bei Kalypso. Die Abenteuer 1–10 erzählt Odysseus später selbst als Rückblende am Hof der Phäaken (Gesänge 9–12). Wie ein Film, der beim Ende einsetzt und dann zurückblendet, folgt die Erzählung <b>nicht</b> der Chronologie. Diese Timeline entwirrt sie: Tippe auf eine Station.
+  </div>
+
+
+  <h3 class="sub" id="karte" style="margin-top:2.2em;">Die Karte der Irrfahrt</h3>
+  <p style="max-width:72ch;">Tippe auf eine Station &ndash; oder lass die Reise abspielen. Die Karte zeigt echte K&uuml;stenlinien des Mittelmeers; die eingetragenen Orte folgen den <em>traditionellen</em> Zuordnungen der Antike und Neuzeit.</p>
+
+  <div class="mapbox">
+    <div class="map-bar">
+      <button class="btn" id="mapPlay" type="button">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <span id="mapPlayTxt">Reise abspielen</span>
+      </button>
+      <button class="btn" id="mapTel" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 18h16M6 18V9l6-5 6 5v9"/></svg>
+        Telemachie
+      </button>
+      <span class="spacer"></span>
+      <span class="zoomer">
+        <button type="button" id="mapIn" aria-label="Vergr&ouml;&szlig;ern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button type="button" id="mapOut" aria-label="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        <button type="button" id="mapReset" aria-label="Ansicht zur&uuml;cksetzen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+      </span>
+    </div>
+
+    <div class="map-stage">
+      <svg class="map-svg" id="mapSvg" viewBox="0 0 1000 681.8" role="img"
+           aria-label="Karte des Mittelmeers mit den Stationen der Irrfahrt des Odysseus">
+        <g id="mapG">
+          <rect class="map-sea" x="-400" y="-300" width="1800" height="1300"/>
+          <path class="map-land" d="M856.2 -14.9L850.8 -6.4L849.8 -3.9L842.0 5.0L837.9 8.6L837.6 5.2L836.5 8.9L833.0 7.3L832.3 7.7L831.8 10.9L831.2 8.8L830.6 9.6L831.1 13.2L829.6 11.2L826.7 12.6L826.8 14.2L828.8 15.7L826.3 16.5L826.3 17.4L824.5 18.4L824.1 15.9L822.8 14.5L823.1 10.5L821.1 8.6L821.7 10.1L820.8 11.9L821.3 13.9L820.1 14.8L819.7 21.1L821.6 21.7L823.6 20.4L820.2 24.9L821.4 26.7L821.9 25.1L823.8 26.9L824.4 25.0L824.9 25.6L825.2 27.3L824.3 27.9L825.0 29.3L825.2 32.4L824.3 36.3L823.1 37.3L820.8 37.3L822.2 39.8L823.3 39.9L822.1 42.0L820.4 54.7L818.7 56.0L805.2 57.7L800.0 62.2L799.2 59.6L803.3 58.1L804.6 56.8L804.6 55.1L803.2 53.4L803.5 55.1L802.0 55.5L801.5 53.9L801.7 50.2L803.7 49.0L801.9 47.5L799.4 47.0L795.6 50.2L795.5 53.1L798.4 55.7L797.5 56.4L798.2 58.6L793.3 60.7L792.9 62.0L793.6 61.8L792.8 62.6L792.8 64.0L795.6 63.5L797.1 61.8L796.6 60.9L798.9 61.6L799.6 62.8L798.0 64.7L799.2 62.3L797.3 62.5L792.5 66.3L793.2 64.7L791.9 65.1L792.1 66.5L792.9 67.0L791.1 67.9L791.1 68.6L791.6 67.9L792.5 68.6L791.5 71.7L791.9 72.6L792.6 70.7L796.9 66.9L797.5 65.4L797.0 67.1L794.8 71.3L790.2 76.6L789.8 78.2L788.8 78.1L787.8 79.6L787.7 82.0L789.1 86.5L787.7 87.1L789.1 94.4L786.1 103.5L785.8 112.5L786.8 115.6L785.9 118.3L782.6 122.1L782.4 123.5L779.8 121.3L777.4 120.7L771.9 121.6L769.7 123.6L767.3 129.6L763.5 131.0L764.9 132.5L762.8 138.8L763.5 142.9L763.5 146.6L762.8 147.2L763.1 153.4L757.8 153.2L757.2 155.0L758.0 155.7L754.3 157.1L755.0 160.3L751.4 160.0L750.4 160.5L749.3 163.7L748.4 163.8L748.9 166.2L749.1 164.7L750.5 165.9L751.5 164.8L754.8 165.0L755.1 166.6L756.4 166.2L757.3 166.8L756.6 167.4L757.3 168.1L756.9 169.1L757.5 170.2L759.3 170.2L759.6 171.5L758.4 173.0L758.5 173.8L761.9 177.3L761.6 178.0L763.5 180.1L766.2 182.2L766.9 183.8L768.2 190.1L765.9 190.5L765.7 193.4L769.6 199.9L769.2 200.6L769.9 202.2L772.6 205.2L779.5 210.1L796.9 218.2L803.6 219.6L802.9 221.5L801.4 222.7L802.4 224.2L801.4 227.0L799.7 228.6L799.6 229.9L798.2 229.6L794.1 231.7L792.3 230.9L787.5 231.4L786.5 230.9L786.8 229.6L785.9 228.9L786.1 227.9L785.1 226.4L784.3 226.2L785.4 228.3L784.7 230.4L781.2 228.1L772.2 226.2L767.1 228.2L764.7 231.2L757.9 229.4L750.8 230.4L749.1 232.5L747.5 237.4L744.4 240.5L742.9 243.0L739.3 246.2L734.9 247.0L733.0 249.2L730.4 249.7L722.8 253.9L720.1 258.7L714.2 263.8L711.5 265.1L712.5 267.1L708.1 270.7L705.9 271.6L705.3 270.9L709.1 263.8L708.9 262.6L707.3 260.9L707.7 260.3L707.0 259.8L707.3 259.4L710.7 257.9L718.8 252.0L722.3 251.5L724.4 249.2L726.3 249.2L727.6 247.5L726.3 244.9L720.3 245.9L716.9 247.6L714.8 246.7L713.3 247.4L703.0 247.3L701.8 244.9L700.9 239.0L700.2 238.6L701.8 238.1L701.8 237.4L700.4 237.7L699.9 237.1L699.9 238.0L697.3 236.5L684.6 235.7L676.7 232.1L675.5 233.2L672.7 232.5L671.1 231.6L672.3 230.2L671.3 229.5L668.0 229.7L668.0 230.4L666.4 231.4L666.3 232.5L663.1 233.5L660.1 236.4L658.9 235.9L657.0 236.5L655.4 235.3L654.3 236.2L652.2 232.1L650.2 231.7L648.8 232.6L647.2 232.4L643.8 235.3L644.4 236.4L643.5 237.0L644.7 237.4L637.0 242.0L632.9 241.8L628.1 239.5L624.4 240.9L623.1 243.4L623.9 245.0L625.2 245.6L626.4 248.1L628.2 249.3L629.6 249.2L630.5 250.3L627.4 251.7L627.6 253.7L628.9 255.8L632.1 257.3L633.4 256.9L633.0 254.3L633.7 254.2L636.2 257.8L639.3 258.5L640.1 260.0L641.1 260.0L646.5 267.2L643.3 268.2L639.0 261.8L634.0 260.3L631.2 257.9L624.3 258.1L623.1 260.3L623.9 262.7L626.0 265.0L629.9 266.3L633.0 268.6L632.6 269.9L633.5 270.9L632.9 272.0L633.7 271.9L634.0 273.1L632.9 274.2L633.3 274.9L632.3 275.2L633.0 275.8L631.3 275.9L628.2 272.8L627.6 273.4L626.2 270.9L626.4 269.7L621.4 263.5L618.0 263.1L614.6 261.6L612.2 262.4L611.3 263.9L612.1 267.3L613.4 267.5L616.6 272.0L622.3 274.4L623.2 276.4L624.9 276.8L623.4 277.6L615.7 275.0L612.0 275.5L612.7 273.7L610.2 269.3L610.8 266.2L610.0 263.5L601.0 259.6L598.8 257.3L596.3 257.0L596.3 255.5L594.1 251.9L598.1 251.2L599.4 249.7L597.0 245.6L595.1 245.9L595.0 247.9L593.9 248.9L592.0 249.0L591.2 251.3L589.1 250.8L588.5 251.8L589.2 252.1L588.4 253.2L586.0 253.4L586.9 255.8L588.7 257.7L585.1 266.6L585.7 271.4L586.7 273.1L590.3 275.5L591.0 278.8L595.0 282.9L598.0 292.0L603.2 295.4L604.2 297.5L609.0 303.1L611.5 309.3L610.0 310.5L607.0 311.3L607.7 311.9L606.8 312.5L603.8 313.2L601.7 312.8L602.7 310.7L603.8 310.2L603.4 312.5L605.7 311.2L606.0 310.2L606.6 310.5L607.2 309.3L604.5 304.2L600.7 303.4L599.9 301.7L597.9 301.5L598.1 304.0L594.8 304.6L594.2 305.3L594.2 307.5L595.1 310.2L595.9 308.8L596.7 309.3L597.4 311.6L598.7 311.9L599.9 314.0L599.9 314.9L598.6 315.9L598.8 316.6L602.4 315.5L600.8 316.6L599.5 319.0L596.6 320.5L594.9 320.2L594.6 321.4L593.1 322.2L589.6 322.2L587.4 320.7L584.2 321.9L584.2 323.1L585.8 322.8L585.1 323.5L586.1 324.2L586.7 323.7L586.4 324.3L590.1 323.4L592.6 326.4L594.3 326.2L595.6 327.5L597.2 326.6L601.4 327.9L603.5 332.5L606.1 331.8L606.5 331.3L605.6 330.7L606.2 330.4L610.2 331.9L611.1 333.9L609.8 335.0L609.5 336.0L610.2 335.5L612.7 336.9L611.3 337.4L611.2 338.2L618.9 338.3L620.0 339.5L619.1 340.4L622.4 344.5L623.7 345.3L626.1 345.0L631.7 347.3L635.6 350.9L636.0 352.6L635.3 354.0L634.6 353.5L633.0 354.4L634.4 359.3L633.7 362.8L634.9 363.6L633.7 364.2L635.6 365.3L635.1 367.1L636.2 368.7L635.3 370.9L635.7 372.7L634.4 374.3L631.7 373.2L631.4 371.1L630.8 371.4L630.1 368.8L629.6 369.1L628.9 367.7L627.1 366.8L626.9 367.7L626.0 368.0L623.2 362.2L620.9 362.4L621.4 361.6L618.7 360.8L619.9 358.7L619.2 357.6L615.0 358.7L613.2 360.1L614.3 360.4L613.6 360.7L607.6 360.7L603.1 363.4L600.5 362.8L599.8 364.6L600.4 366.0L603.8 365.9L606.1 367.7L606.1 369.1L604.3 369.7L604.0 370.5L605.9 371.4L605.6 375.9L611.2 379.2L612.0 378.7L612.0 377.6L610.4 375.7L613.3 374.9L613.5 376.5L612.5 378.3L614.1 379.5L613.2 380.1L616.0 381.1L617.5 382.4L617.5 383.2L614.9 384.3L608.8 384.8L607.7 385.9L609.3 387.0L606.2 387.4L606.8 389.0L605.6 389.1L604.7 388.7L605.4 388.1L602.4 386.8L602.4 384.8L603.2 385.3L603.8 383.8L604.7 384.4L604.4 382.8L601.5 382.4L602.0 382.1L601.5 381.2L600.2 382.4L599.4 380.3L597.4 379.0L595.1 380.1L592.6 376.6L590.9 377.9L591.0 380.9L592.2 383.5L591.9 385.0L594.0 387.2L594.0 388.4L596.9 393.5L596.8 396.6L598.5 396.4L598.5 397.6L599.4 398.2L598.8 398.2L600.0 400.2L600.4 402.2L599.7 402.2L600.4 402.7L600.4 404.2L603.1 409.2L602.7 410.4L603.8 410.7L603.0 412.7L601.7 412.2L601.0 413.1L601.1 414.4L602.0 414.4L601.1 415.2L601.2 416.2L602.7 419.1L605.2 420.7L604.5 422.1L606.8 424.2L606.5 425.2L603.2 424.8L601.7 421.5L599.1 421.6L597.6 418.4L595.8 417.0L596.1 416.0L594.6 414.7L593.8 415.3L593.9 413.4L592.9 410.2L589.5 409.6L585.9 410.7L586.0 412.4L584.2 414.7L585.0 415.0L585.1 416.2L583.9 415.5L584.2 417.8L583.8 418.2L583.5 417.3L582.8 418.0L582.9 421.4L583.7 423.8L583.0 426.9L582.3 424.4L580.3 423.0L579.4 423.2L578.5 421.9L579.6 420.1L579.1 419.0L579.6 418.2L578.9 418.2L579.0 416.5L579.6 416.4L578.9 415.9L579.6 413.9L578.6 414.0L576.4 409.1L574.1 405.9L572.5 406.2L571.3 405.1L571.8 400.7L568.3 400.2L564.8 401.9L564.1 407.3L564.3 409.0L565.7 410.2L562.8 413.0L560.8 409.6L558.8 410.2L556.9 409.2L556.3 406.2L557.0 404.0L556.3 403.1L555.6 403.3L556.1 402.7L555.4 403.3L555.2 401.8L552.6 398.4L552.3 396.8L552.5 393.6L556.1 389.7L556.5 388.4L555.8 385.0L551.7 378.1L546.7 374.1L544.8 373.6L543.7 374.9L543.3 373.4L543.7 371.2L542.8 368.7L537.4 366.5L536.9 364.8L537.8 361.9L538.8 362.6L540.3 361.9L544.2 358.7L544.0 358.1L542.8 359.0L545.6 354.5L545.8 350.3L547.0 351.7L546.7 350.5L550.8 352.6L554.1 353.0L556.7 350.9L558.8 347.1L561.6 345.1L565.2 345.3L567.3 346.3L568.3 348.0L570.5 348.3L572.0 350.6L574.0 351.6L577.7 352.0L580.5 353.8L583.7 354.1L589.3 356.8L595.6 362.2L598.2 361.9L599.2 360.5L596.2 358.2L595.1 358.1L595.8 357.5L598.1 356.1L602.3 357.1L605.8 356.2L607.2 355.2L605.9 353.5L607.4 352.9L604.3 352.3L605.0 351.7L604.1 350.8L602.2 351.8L601.1 351.7L601.7 351.4L600.8 350.4L598.4 350.1L597.4 350.8L599.0 351.4L597.0 351.4L596.5 349.4L593.5 350.0L592.2 349.1L593.3 347.6L589.9 346.2L589.2 345.0L589.5 344.3L588.2 343.1L587.6 343.8L588.2 344.3L587.1 344.2L586.2 345.3L586.9 345.9L586.7 346.8L585.4 347.2L582.3 341.7L580.1 340.4L580.3 342.0L579.1 343.0L580.0 343.7L579.4 345.1L574.2 344.3L573.0 345.9L571.1 343.8L565.3 342.1L562.6 343.6L561.0 342.8L558.8 345.7L557.2 344.4L553.3 344.7L550.6 347.1L547.6 345.6L549.7 346.5L549.2 345.0L549.7 344.4L549.0 344.4L549.2 343.8L547.4 344.2L547.2 342.9L545.9 342.7L545.3 339.8L544.1 338.5L543.6 338.6L545.1 341.2L544.6 341.2L544.6 342.8L542.3 344.0L541.7 345.3L539.7 345.1L539.4 345.6L540.0 345.9L539.1 346.8L538.5 346.7L538.0 345.3L536.2 345.0L536.9 344.6L536.9 343.8L536.4 344.2L536.9 343.3L537.1 343.7L538.0 342.7L536.5 342.5L536.1 341.8L536.2 340.9L536.9 341.6L537.3 340.9L536.9 341.2L536.9 339.2L536.0 338.9L536.6 338.6L536.2 338.3L536.5 337.0L534.4 337.9L534.2 333.8L532.6 331.0L530.5 330.4L529.1 325.8L528.2 325.6L527.0 327.2L525.8 327.2L524.3 325.2L525.0 323.1L526.8 322.7L525.2 321.0L525.7 318.8L527.2 320.4L528.7 318.7L528.9 320.2L530.1 320.1L530.7 319.0L534.2 319.9L534.2 321.4L536.2 322.8L536.7 320.8L539.2 322.3L538.0 319.5L538.7 317.1L536.2 314.3L536.0 315.5L534.6 316.1L535.3 316.6L531.8 315.5L531.2 314.6L531.6 314.0L530.0 313.7L528.9 314.7L529.5 315.4L528.2 315.4L528.6 314.5L528.2 313.7L527.5 314.0L527.9 313.1L527.4 312.1L525.9 313.1L526.4 313.5L526.1 314.9L525.2 316.1L524.8 315.7L527.7 318.6L525.5 318.0L524.5 319.1L523.4 317.1L523.9 316.4L522.9 313.9L519.9 311.7L516.0 307.3L516.1 304.9L510.8 304.0L509.0 300.3L507.9 299.8L507.2 298.1L508.9 297.8L507.2 295.7L508.5 295.8L508.8 295.1L504.5 294.2L504.9 292.4L505.8 292.2L506.1 290.1L503.0 288.0L499.6 287.4L500.1 284.7L499.4 284.4L500.5 281.1L500.3 279.6L496.9 277.9L498.0 276.4L495.4 271.8L493.6 271.5L492.6 270.4L492.4 271.0L491.1 269.0L482.5 264.5L479.4 260.9L478.1 257.5L476.3 255.5L477.2 254.7L478.3 255.0L480.8 259.4L482.5 258.6L482.6 254.0L480.6 252.3L479.7 251.0L479.5 250.1L481.1 251.7L481.8 249.6L480.5 248.3L479.7 248.5L479.5 249.7L476.8 245.3L478.7 242.8L479.0 238.7L480.2 237.9L479.8 236.8L480.5 235.8L479.4 234.0L481.4 232.2L480.9 232.8L480.9 235.6L481.3 235.0L481.4 235.6L484.1 233.5L483.2 229.9L481.8 233.3L482.5 230.2L481.4 229.1L481.9 225.3L481.4 223.6L482.1 223.3L483.8 217.7L482.9 216.4L480.6 215.7L479.8 211.6L481.0 212.2L481.4 210.4L483.0 209.3L483.9 207.2L481.4 204.0L484.3 204.4L485.5 204.0L486.2 202.5L487.1 203.1L486.7 201.6L485.3 200.6L485.9 199.4L485.7 195.7L486.6 195.4L486.4 193.6L481.1 191.4L478.8 192.1L477.0 190.2L472.3 188.2L471.3 186.1L471.3 183.6L469.4 181.8L469.5 180.5L468.3 179.2L467.0 179.2L463.8 175.5L462.9 172.7L461.0 173.0L460.6 172.4L459.3 173.3L457.2 170.8L455.9 168.1L453.9 168.9L451.5 166.4L452.1 165.7L456.7 167.8L456.2 163.7L455.1 165.1L450.1 165.0L451.0 167.4L450.3 167.2L449.1 165.6L441.3 160.3L440.6 157.5L435.9 156.1L434.8 153.8L434.3 154.3L430.1 151.5L429.4 150.8L429.8 149.8L426.9 148.8L426.0 149.5L424.0 148.2L425.4 150.3L425.0 150.6L424.3 149.3L414.7 146.0L414.8 144.9L413.9 144.3L407.1 141.0L400.9 140.1L400.9 138.8L400.1 137.9L402.4 139.1L408.0 139.2L413.0 141.3L415.1 142.9L415.3 143.8L418.6 144.2L424.7 147.6L423.4 146.2L423.6 145.4L422.6 145.7L418.5 143.2L420.6 143.8L420.1 143.3L416.6 141.5L415.7 139.6L416.7 138.8L414.5 139.5L415.3 138.8L414.4 138.6L414.2 137.3L413.5 137.9L410.5 134.4L402.4 129.3L401.6 127.5L396.0 121.7L387.5 119.7L384.2 116.9L379.7 116.9L382.4 115.6L381.1 115.1L370.6 116.2L372.4 117.8L370.4 118.3L365.3 117.2L366.2 115.3L365.3 115.6L364.2 114.7L364.8 114.3L363.9 114.0L364.4 113.4L364.0 111.4L365.5 110.9L363.5 110.6L365.1 110.4L364.4 109.6L365.0 108.7L364.6 108.3L364.4 109.2L359.7 105.6L356.9 105.2L356.1 103.7L353.9 102.4L355.4 102.9L356.0 102.7L348.5 97.6L338.2 85.2L338.7 84.4L338.4 83.4L337.0 82.0L338.0 81.2L339.2 82.7L340.3 81.6L339.5 81.0L340.2 81.0L339.9 80.3L343.2 82.7L342.7 81.0L343.4 80.4L342.0 78.8L347.5 81.8L351.0 81.7L348.3 81.0L346.9 79.4L343.6 77.8L336.0 69.3L333.6 67.8L329.5 60.6L329.5 54.1L330.7 49.5L328.4 43.1L321.9 38.3L319.2 35.2L319.4 34.1L317.8 32.8L318.4 33.9L313.4 31.5L310.4 31.3L309.1 33.8L307.8 40.5L307.0 41.6L306.0 41.2L306.4 42.6L305.3 43.4L305.3 45.0L304.8 44.8L305.5 46.7L305.0 48.6L303.4 48.8L302.3 49.9L302.8 48.2L301.3 45.7L301.5 47.5L302.5 48.3L301.2 49.6L300.7 52.2L299.1 52.2L299.8 53.1L299.1 55.7L300.0 56.4L297.5 56.4L296.3 55.4L297.3 58.0L296.8 58.3L296.6 56.4L292.9 53.4L294.0 53.8L294.7 52.8L293.2 52.5L293.6 51.5L292.5 49.3L288.7 44.7L287.4 44.1L287.9 43.1L287.1 42.0L290.9 41.2L286.7 41.1L286.1 38.3L286.5 35.7L285.8 35.0L286.8 34.1L285.8 33.1L287.0 32.4L285.0 31.8L284.7 30.7L285.2 30.2L283.8 26.9L283.6 23.3L286.3 24.4L286.5 23.0L285.6 22.0L291.8 21.4L290.4 19.4L291.0 18.5L293.6 18.4L291.3 16.8L291.9 16.5L291.3 14.8L287.6 10.9L285.0 9.9L284.1 11.5L284.3 12.4L285.2 12.6L280.1 15.5L279.2 15.2L281.0 14.0L279.0 12.2L275.2 11.7L273.9 10.6L271.7 11.9L270.6 10.9L270.3 11.6L270.8 12.6L269.4 13.0L269.2 14.5L271.7 14.2L269.5 17.1L264.8 17.8L259.4 21.3L247.5 26.8L247.0 26.9L247.7 24.6L248.4 24.0L249.1 24.6L248.8 23.7L250.5 24.2L250.7 23.0L252.7 21.4L251.2 22.2L250.2 20.4L248.1 22.4L248.4 23.3L246.8 23.0L246.6 22.0L246.1 22.8L247.5 24.0L245.0 23.7L242.4 25.6L240.5 32.6L238.5 32.7L238.3 33.8L239.4 35.4L239.9 33.4L240.6 33.7L240.8 35.7L240.4 36.1L241.6 38.3L243.6 36.7L244.3 42.8L243.6 42.5L243.6 41.5L243.2 43.4L244.7 43.7L245.9 45.7L245.2 46.4L245.6 47.0L246.2 45.7L245.6 44.5L249.5 48.7L250.1 48.0L251.1 49.0L250.0 51.3L249.6 54.0L248.2 56.0L247.5 54.4L247.9 52.2L246.9 52.7L246.4 54.2L247.2 54.6L246.6 55.4L247.5 56.0L247.2 56.8L245.9 57.3L243.4 55.0L242.2 55.7L242.7 56.0L241.6 61.1L242.9 66.2L242.8 71.6L244.0 77.9L246.3 84.0L256.4 94.7L264.3 98.2L275.1 108.0L282.4 112.2L283.9 111.3L287.2 114.6L294.5 134.4L298.2 149.4L302.5 158.5L307.4 164.3L312.9 168.7L318.7 175.3L323.6 177.6L324.7 181.7L329.0 184.0L333.1 185.0L334.8 186.9L338.8 188.7L348.2 189.6L367.6 188.0L371.3 189.1L372.6 190.2L373.1 194.8L363.3 202.7L363.2 206.2L364.5 208.7L367.4 211.0L384.0 218.9L386.5 220.8L401.9 226.4L409.2 230.8L415.9 237.5L424.9 241.1L428.1 243.4L431.9 244.5L431.8 245.5L433.6 245.4L434.8 247.5L434.6 249.5L441.3 253.8L447.9 262.1L450.5 267.7L450.5 269.3L447.0 274.7L446.3 281.8L444.9 282.6L442.7 281.1L440.4 280.8L435.7 277.7L433.2 274.0L434.0 273.4L433.9 272.2L432.2 271.3L433.7 269.6L430.9 266.1L430.0 262.9L430.4 262.7L428.8 261.4L417.1 260.6L413.3 259.4L406.7 255.5L408.1 254.5L407.6 253.1L409.9 253.1L410.8 252.0L408.7 252.5L408.2 251.8L406.3 252.8L405.2 251.4L401.7 251.1L397.1 254.4L392.8 260.7L391.0 265.1L386.8 270.1L386.6 272.3L387.7 275.3L384.7 278.8L383.0 283.6L384.3 285.9L383.9 287.3L384.9 288.5L387.5 290.1L392.7 290.7L394.9 293.2L400.4 296.1L403.0 298.8L405.3 299.5L403.8 304.9L404.9 308.0L404.2 313.1L405.3 315.3L406.9 315.7L405.7 316.8L405.7 318.7L403.5 321.3L403.2 320.5L400.7 321.0L399.4 319.7L397.8 319.6L390.9 322.2L386.2 325.7L384.5 329.9L385.9 337.2L385.7 341.4L383.6 343.8L376.9 347.9L372.3 353.5L370.4 360.7L368.8 362.4L366.7 363.0L364.7 362.4L358.7 362.8L356.1 361.6L354.5 359.2L355.3 357.8L354.1 355.7L354.9 353.5L354.4 350.3L360.4 346.9L363.5 339.5L363.9 336.2L361.2 332.9L361.2 332.0L366.8 328.8L371.8 328.5L373.4 326.6L374.1 323.2L373.8 320.5L371.8 318.9L369.4 313.8L367.8 302.2L366.5 298.1L362.5 293.3L360.2 287.0L359.0 281.2L359.1 278.5L354.1 270.4L351.2 270.4L347.0 274.1L344.8 273.6L343.8 272.3L342.0 272.5L342.6 271.7L342.1 270.6L337.6 266.4L334.9 266.4L333.4 264.6L330.4 263.3L331.3 260.4L331.1 259.3L333.1 258.2L333.3 256.5L329.6 248.8L326.1 244.5L320.9 245.4L318.1 247.0L316.2 246.2L311.4 248.9L311.3 246.5L315.9 243.4L315.8 241.9L313.1 240.5L309.8 237.1L307.5 237.4L306.8 238.7L302.8 237.4L302.8 239.5L301.6 239.2L301.7 237.1L300.7 233.4L298.8 230.1L297.3 228.9L297.0 227.1L295.1 223.5L290.7 218.8L286.5 218.8L285.5 219.4L285.8 220.8L284.8 220.8L283.8 219.8L276.2 216.9L272.9 217.7L269.7 219.9L268.2 219.9L266.0 215.3L263.1 212.3L258.3 211.2L255.1 209.3L254.5 210.1L248.3 202.0L244.2 198.4L241.3 197.3L239.0 190.9L234.0 185.8L230.6 183.8L227.6 183.9L221.9 172.9L218.0 169.8L212.6 167.2L207.0 166.6L206.1 169.0L203.6 167.9L202.9 166.6L203.3 165.5L205.5 165.7L206.3 163.8L206.2 162.0L205.3 160.1L204.3 160.3L202.6 157.0L200.2 155.3L199.7 153.4L198.1 151.9L191.0 149.1L192.2 147.7L192.6 145.0L192.1 144.0L187.7 142.1L184.6 142.6L184.9 143.2L184.0 143.7L183.3 143.0L182.6 140.7L183.9 139.2L184.9 133.5L184.3 129.0L181.2 122.5L177.2 117.7L175.1 101.4L172.7 96.4L169.7 93.1L166.3 91.5L165.4 92.2L161.5 89.3L160.7 90.0L161.6 90.9L161.1 92.3L156.1 88.0L154.0 87.4L149.5 83.0L147.9 83.2L145.8 81.7L145.6 80.6L141.0 77.9L140.4 80.1L138.2 79.0L137.7 77.4L136.7 76.9L125.4 74.2L115.5 80.2L113.7 83.8L113.6 85.3L108.6 88.3L107.2 92.2L105.1 95.1L105.6 96.3L102.3 99.1L91.2 103.6L83.4 103.9L80.1 107.3L78.4 107.4L77.7 108.8L75.2 108.5L73.5 110.7L71.7 110.2L70.9 112.5L71.3 114.9L69.6 114.2L67.9 115.7L65.9 115.2L64.8 116.1L65.1 117.4L63.1 120.7L62.1 120.2L61.6 121.4L58.2 121.1L57.3 124.2L55.8 124.4L53.2 127.3L53.0 128.0L53.7 128.2L56.4 127.8L55.6 129.3L56.0 131.0L53.7 132.3L53.1 131.7L51.3 131.9L50.2 133.4L46.7 133.5L45.5 134.8L45.8 136.1L42.7 134.8L39.8 135.3L38.4 137.0L38.4 138.1L39.3 138.6L36.3 138.7L37.7 137.9L37.6 137.0L34.2 136.7L33.9 135.7L31.1 135.1L31.4 134.1L29.3 134.8L31.7 136.6L29.2 137.1L28.6 138.2L26.1 136.6L27.0 135.4L23.2 133.5L22.5 132.0L21.1 131.7L20.4 132.9L19.1 132.5L17.5 130.5L11.6 130.4L12.3 127.9L11.3 125.0L9.8 124.0L7.9 125.3L1.1 124.9L0.2 122.8L0.9 121.5L5.8 120.7L7.5 118.3L7.4 117.2L4.7 118.0L3.5 115.8L1.0 114.7L0.3 116.6L2.1 119.6L1.7 120.6L-0.1 121.3L-2.4 120.1L-4.4 121.0L-5.0 121.9L-4.4 123.6L-3.3 123.5L-4.8 124.6L-5.6 122.8L-8.1 120.9L-8.6 116.2L-10.2 113.7L-9.0 116.1L-8.6 120.9L-5.9 123.5L-6.0 124.4L-13.3 123.9L-13.3 -19.3L859.1 -19.3L857.2 -16.8L855.1 -16.6L856.2 -14.9ZM-7.1 406.0L1.5 410.4L3.5 410.7L3.0 413.4L7.9 416.2L10.1 416.5L15.5 415.6L18.3 413.7L19.8 411.0L23.7 408.9L29.0 409.0L39.9 405.7L41.9 403.9L42.2 400.9L44.6 398.7L47.2 397.7L48.7 397.7L51.5 399.2L53.3 402.7L60.7 403.6L63.6 406.1L65.9 406.2L69.7 404.7L71.9 405.2L75.1 401.8L75.0 400.7L72.7 398.4L74.1 397.9L75.8 398.7L79.4 398.2L80.2 399.5L83.0 399.3L86.3 402.1L89.1 402.2L90.4 403.2L92.4 402.9L93.3 401.9L92.4 406.2L95.5 407.7L101.7 406.7L107.8 403.4L109.6 404.7L116.6 405.6L123.1 402.9L127.5 402.5L130.9 400.0L134.6 395.3L138.6 393.6L140.4 391.8L144.8 391.8L147.3 390.1L148.5 390.4L151.8 388.7L153.0 389.0L155.0 387.7L158.2 387.2L162.0 387.9L162.1 390.3L159.1 392.7L160.5 395.3L162.7 395.3L163.8 394.2L164.2 392.7L160.7 392.1L162.7 390.6L166.0 391.3L168.7 390.5L169.2 391.4L171.5 391.7L175.7 394.2L173.7 395.0L172.6 394.2L170.9 395.0L172.1 396.0L173.7 395.9L174.2 396.7L174.1 397.6L173.9 397.0L172.5 398.4L172.7 400.5L174.0 402.6L178.2 406.6L176.6 409.1L175.1 408.0L173.7 408.6L172.9 410.1L174.9 410.5L175.7 409.3L177.3 412.1L180.1 413.0L184.0 411.8L186.2 406.8L191.1 406.0L196.3 401.4L196.7 399.6L200.4 398.1L201.7 398.3L201.6 400.8L204.5 407.0L204.4 407.7L200.7 410.4L193.3 424.4L185.0 427.5L183.0 432.4L182.5 438.4L184.0 443.9L186.1 446.3L187.4 449.6L191.5 452.6L194.1 452.1L194.7 452.7L194.2 454.1L194.7 455.5L201.4 458.0L201.8 458.9L200.6 459.4L200.5 461.4L201.3 462.9L202.8 463.3L201.7 465.3L201.4 470.4L203.4 473.2L205.4 474.3L205.3 475.1L203.7 475.7L202.1 477.8L200.5 480.3L200.6 482.6L197.3 485.8L197.2 489.2L195.2 490.9L195.7 492.3L193.7 493.4L190.6 497.6L187.5 498.9L186.6 502.5L181.1 504.5L179.3 507.4L176.3 507.8L174.9 509.5L170.9 511.4L167.8 517.0L166.8 517.6L168.3 525.1L172.4 531.4L177.7 536.4L181.5 538.3L185.3 538.3L190.6 536.2L191.3 537.7L191.2 540.4L189.1 542.7L190.1 544.7L191.3 545.4L197.0 542.9L197.8 541.6L196.9 539.9L197.9 539.1L199.5 538.8L201.4 539.8L203.7 542.9L203.9 544.9L203.0 546.4L203.7 548.8L203.4 550.0L204.4 549.7L205.7 551.2L209.8 553.0L204.5 552.1L204.1 553.3L206.0 556.1L208.2 555.8L212.4 557.1L214.4 556.8L211.7 554.2L214.7 556.3L218.7 557.9L221.2 560.1L226.4 561.2L223.0 559.0L228.2 561.2L237.4 567.6L243.5 570.7L257.7 572.5L260.8 572.2L269.1 569.8L272.2 567.9L278.4 568.3L285.7 572.3L294.3 572.6L299.7 574.6L306.2 575.8L315.6 583.5L321.1 584.4L324.2 586.2L330.4 586.5L339.4 588.4L342.8 591.5L343.4 593.7L345.5 597.1L345.4 605.3L349.7 617.1L354.1 623.7L358.7 627.9L368.2 632.3L378.6 634.2L390.9 634.4L398.1 635.9L405.3 638.5L412.2 639.7L415.6 641.9L428.3 646.0L430.9 648.7L440.3 652.0L444.1 656.4L452.3 662.5L455.1 665.5L459.4 667.3L464.2 670.5L468.6 671.5L474.7 671.2L478.0 670.2L484.4 666.5L487.2 665.5L491.6 662.0L497.1 655.4L499.4 651.7L501.2 650.1L503.3 645.6L504.9 641.3L504.9 634.6L503.4 631.0L500.7 627.6L498.5 621.3L497.2 613.4L498.0 605.6L502.4 597.0L510.8 587.8L518.8 582.0L526.6 578.6L535.0 573.5L542.9 573.5L547.2 572.7L553.6 567.2L557.2 566.4L559.6 567.8L562.6 568.3L569.9 567.5L571.7 566.5L573.6 568.9L578.0 569.1L583.8 572.8L603.5 578.7L604.0 579.7L603.1 581.2L603.5 583.6L605.0 585.1L604.3 588.4L603.1 586.8L602.7 590.8L606.5 592.5L610.4 597.6L610.0 595.2L612.1 595.4L613.5 596.5L622.3 596.8L628.0 598.1L633.3 600.3L632.4 601.4L636.4 603.8L651.5 604.3L655.7 602.7L657.8 602.7L666.1 605.2L667.3 606.0L667.8 607.3L667.7 610.4L670.6 614.3L671.9 617.2L672.1 620.3L673.0 622.3L680.1 623.5L694.1 619.1L698.9 619.0L712.1 622.7L725.1 624.5L728.9 626.0L732.2 625.5L735.1 627.1L740.9 628.7L744.2 628.3L746.5 633.2L748.2 634.4L752.9 635.6L753.7 635.2L755.3 636.1L761.8 633.7L763.2 638.6L764.2 639.2L771.8 639.4L773.5 640.3L777.3 640.7L780.8 639.8L782.6 641.1L793.7 644.8L794.5 646.5L800.9 649.8L807.3 649.4L816.8 644.8L825.5 638.3L826.1 637.3L827.9 637.1L829.5 635.7L828.8 635.4L829.2 634.8L829.9 635.2L835.7 630.1L835.6 631.2L836.5 632.0L839.1 632.5L838.0 633.8L838.8 634.6L840.2 633.8L840.7 634.5L842.3 632.7L843.0 633.8L843.4 632.5L842.9 632.2L841.4 632.7L841.8 632.2L839.3 632.2L841.7 631.3L843.8 629.4L844.9 626.7L844.8 623.7L845.5 625.1L846.6 625.8L845.7 625.1L845.4 623.2L848.5 625.0L851.2 625.0L865.8 620.2L854.3 626.1L851.9 626.6L851.4 627.4L854.2 627.9L855.8 626.6L857.8 627.9L860.0 625.7L863.1 626.7L864.7 625.3L866.0 626.1L867.6 622.9L870.6 623.8L871.0 623.4L870.4 623.1L871.0 622.9L870.4 622.0L867.4 620.3L865.9 620.3L869.9 619.4L874.0 620.5L885.2 625.8L891.6 624.3L895.8 622.2L897.1 622.2L898.2 622.8L900.8 627.5L906.7 631.6L899.8 627.7L898.9 626.1L899.8 626.0L897.3 622.6L896.3 622.3L895.0 622.9L894.8 623.7L895.5 623.7L896.0 626.3L894.7 625.0L894.1 625.8L895.3 625.8L895.2 626.6L896.0 626.9L894.3 627.1L894.8 627.7L894.3 628.7L895.3 629.3L893.2 629.1L893.2 631.0L892.2 632.0L894.0 632.2L896.2 634.4L896.9 633.3L896.4 634.6L896.9 634.6L896.6 635.2L897.6 634.9L897.5 635.8L899.6 634.1L900.3 634.9L901.2 634.6L901.2 637.2L900.5 638.1L901.7 637.6L902.3 638.9L901.5 639.7L902.8 639.8L903.5 641.0L904.4 640.5L903.3 639.4L904.9 640.0L904.6 639.4L906.0 638.9L906.1 638.2L907.8 639.0L909.4 637.8L908.7 636.5L909.7 636.5L909.8 634.8L909.0 633.0L909.4 632.7L907.1 632.2L906.9 631.6L911.0 632.5L911.5 633.7L913.0 634.3L917.0 638.9L920.1 640.7L925.4 639.9L930.9 637.0L928.0 639.1L922.2 641.0L923.8 641.0L923.4 641.6L925.7 641.3L929.8 639.2L930.6 639.9L931.4 639.4L930.5 639.2L930.9 638.7L932.3 639.7L932.5 640.5L932.0 640.5L933.7 640.9L934.1 640.2L933.6 639.7L935.2 639.2L935.5 637.8L934.3 639.2L931.8 638.9L932.8 638.8L934.3 636.8L937.0 635.4L937.5 635.7L936.6 635.9L938.6 638.5L937.3 638.9L938.2 640.0L937.8 641.3L940.7 640.7L939.8 640.2L942.1 639.2L943.5 640.0L943.9 639.2L942.6 638.9L946.2 638.6L945.9 637.9L946.9 637.7L946.9 637.0L950.0 638.1L954.9 638.5L968.2 634.2L974.1 630.3L981.4 622.2L983.8 618.6L990.4 605.9L994.6 592.9L998.5 571.0L1000.9 571.3L1002.1 570.1L1003.3 560.4L1004.9 558.9L1005.4 557.4L1005.8 557.7L1007.0 554.3L1006.3 553.3L1007.5 552.0L1009.0 546.2L1011.6 544.0L1013.3 538.9L1013.3 697.1L922.7 697.1L923.0 692.0L920.2 688.5L920.8 686.6L919.1 684.5L919.5 683.6L918.7 682.7L919.3 681.3L918.6 682.7L919.1 684.0L918.5 683.2L917.1 683.2L915.9 684.4L915.8 686.3L917.0 686.9L913.1 692.0L911.3 697.1L-13.3 697.1L-13.3 406.0L-7.1 406.0ZM1011.5 420.7L998.7 413.0L996.7 413.3L996.9 412.4L992.4 409.3L989.8 409.4L985.2 411.3L975.9 418.8L972.6 423.5L969.2 426.0L969.3 429.5L966.7 430.6L965.3 434.3L964.7 434.3L965.0 433.3L964.4 431.1L962.4 430.1L960.4 432.1L960.8 432.4L960.0 433.6L956.8 435.6L956.3 437.4L954.9 435.1L951.7 437.8L951.0 437.7L951.5 437.1L948.6 436.6L940.4 438.0L938.6 437.4L936.3 439.7L931.4 438.8L926.8 442.0L922.4 441.2L912.2 435.7L909.6 433.0L909.2 431.2L906.4 428.3L903.4 423.0L900.6 420.5L893.9 418.7L891.2 416.5L879.3 411.3L879.2 410.3L878.0 409.6L864.7 407.6L859.2 407.9L856.2 406.2L853.4 408.4L852.3 410.7L852.6 415.0L851.9 416.7L852.8 418.4L852.3 421.3L850.7 422.8L849.2 426.5L850.1 428.1L849.8 428.7L850.7 429.0L847.6 433.7L846.6 434.6L846.1 431.8L841.8 430.4L838.6 430.8L838.2 432.6L837.7 431.8L837.0 433.2L834.9 432.4L834.5 432.6L835.2 432.9L832.9 434.1L830.6 434.0L827.7 435.4L826.0 437.3L825.4 437.4L825.8 436.6L824.0 436.4L822.4 438.0L820.8 435.7L821.4 435.4L819.5 435.4L820.8 434.9L814.0 433.6L813.7 432.1L811.7 433.5L807.8 429.7L804.8 428.7L804.8 427.5L803.2 426.9L804.3 426.1L804.1 424.3L803.2 423.5L804.1 422.7L803.8 420.2L800.5 420.4L801.2 419.9L800.7 418.7L801.4 417.3L801.9 417.7L803.2 416.4L803.0 417.1L803.9 416.8L803.2 415.6L798.5 413.0L798.0 412.0L795.0 415.6L795.7 417.0L796.1 415.3L796.7 415.9L795.7 418.0L794.3 418.2L794.0 417.4L794.8 416.7L792.9 416.2L792.8 415.1L791.5 414.2L788.8 414.4L788.3 413.4L787.4 414.1L786.8 412.7L787.0 409.3L786.6 410.2L784.9 409.0L784.1 409.4L784.3 410.4L782.9 409.9L783.3 409.3L781.9 408.8L782.2 407.7L781.7 406.5L779.2 407.7L780.8 408.7L779.9 410.4L777.2 409.3L777.2 410.2L775.9 410.1L775.9 409.4L777.2 408.7L775.2 408.0L774.6 409.4L775.0 411.3L776.5 413.3L774.5 413.3L774.5 414.1L772.1 415.3L770.4 418.1L768.7 418.4L767.9 419.7L765.9 419.7L765.3 418.2L767.8 418.2L769.7 416.4L769.2 415.9L768.3 416.7L768.7 415.6L767.9 414.5L767.7 415.3L765.5 414.6L768.1 413.3L770.5 413.3L769.4 412.2L770.3 411.0L771.0 411.9L770.6 409.9L768.2 411.5L767.8 411.0L763.9 412.4L763.7 411.9L761.9 412.4L760.2 411.6L757.3 411.8L756.1 413.0L755.7 415.9L751.8 414.7L749.1 416.2L746.8 415.6L746.5 414.8L745.4 414.7L745.2 413.6L747.1 413.7L748.3 411.9L753.7 411.4L754.1 409.9L754.8 409.7L758.7 410.7L760.0 409.7L763.2 409.4L767.6 410.7L768.5 409.6L766.9 408.7L767.5 408.3L766.9 407.6L768.5 407.0L767.4 405.3L768.7 404.7L768.1 404.2L771.9 404.5L772.2 405.3L771.9 403.9L772.8 404.2L773.7 401.6L774.8 402.1L774.9 401.3L777.6 400.1L776.8 399.5L770.9 400.1L770.2 400.3L770.3 401.0L766.2 400.2L759.6 401.3L759.3 401.9L756.3 401.4L754.5 402.4L752.2 401.8L752.1 402.7L749.1 401.9L747.9 400.5L746.6 400.5L746.1 401.9L745.9 400.5L744.3 401.0L743.6 403.3L742.1 403.1L741.0 399.0L743.1 397.0L742.0 397.0L741.8 396.4L744.1 396.4L744.1 395.0L744.7 396.2L746.1 395.3L746.2 396.2L747.9 396.4L748.7 397.9L752.2 396.4L752.5 395.9L751.8 396.2L750.9 393.6L752.9 393.3L752.5 394.2L753.7 393.3L753.0 392.0L753.9 390.1L751.8 390.2L750.5 392.0L750.0 391.8L750.6 391.3L750.3 390.4L748.8 391.1L749.7 387.9L749.1 387.2L749.0 388.4L748.2 388.8L746.6 388.1L746.6 386.3L747.9 385.3L746.9 384.3L744.1 386.1L744.3 386.9L741.5 387.6L739.7 386.7L740.2 385.0L740.9 384.7L740.8 381.7L739.3 382.1L739.3 378.8L740.3 378.0L740.3 376.6L733.7 373.7L734.0 372.8L737.6 372.7L740.4 371.7L741.7 370.4L742.1 367.9L741.3 365.3L742.5 362.6L741.3 360.1L738.0 360.2L735.7 358.8L735.2 357.7L732.5 356.8L729.8 357.2L729.1 358.1L728.1 356.4L727.8 354.0L726.5 352.3L725.9 352.6L725.3 350.4L721.2 351.0L720.8 353.7L720.3 353.5L719.8 355.2L718.9 353.5L718.6 354.4L717.5 353.4L717.3 352.0L716.4 352.2L713.9 350.3L713.9 351.1L713.0 350.1L713.0 348.5L711.8 349.9L707.8 348.0L708.0 347.1L708.8 347.5L710.3 345.9L709.6 345.2L709.8 343.9L710.3 344.4L710.7 343.6L710.5 345.3L712.8 346.1L712.8 345.0L713.9 345.3L715.9 344.0L715.1 341.5L716.3 342.4L717.1 341.2L714.7 339.5L712.9 340.3L713.5 338.9L712.3 336.9L711.6 332.6L711.9 331.5L713.4 330.8L716.9 331.9L721.0 337.6L721.4 339.8L719.6 340.0L720.2 340.3L719.6 341.8L720.7 342.4L722.4 346.6L723.3 345.8L722.6 345.0L722.4 343.3L723.4 341.4L724.2 341.2L725.6 344.2L726.5 344.4L730.8 343.6L733.8 342.1L736.3 342.5L738.8 340.4L734.1 340.0L731.2 341.2L731.5 340.7L729.9 338.6L728.3 337.9L727.2 336.6L729.7 338.0L727.8 336.3L728.3 334.2L726.5 334.2L726.7 333.6L725.1 333.4L725.3 332.5L724.0 331.9L725.1 331.3L724.0 329.0L727.3 327.5L730.1 328.4L729.9 327.8L731.2 326.8L729.9 324.9L731.3 324.3L732.0 325.3L732.0 323.7L733.8 322.5L734.5 323.0L735.4 321.9L734.7 321.7L735.3 320.5L734.7 319.6L732.8 320.5L732.1 319.6L730.8 319.6L728.9 320.7L726.9 319.1L726.6 317.1L727.2 316.1L726.5 316.1L729.1 314.3L729.2 313.1L727.5 310.6L724.6 308.5L724.0 305.7L720.3 305.2L721.5 303.4L721.8 303.8L721.2 304.2L722.4 304.9L722.3 303.9L727.2 299.8L726.7 298.4L728.4 298.1L728.9 296.7L731.0 296.0L731.3 292.3L729.8 291.8L727.8 293.0L726.9 292.4L715.2 294.6L712.1 296.3L709.6 296.0L708.3 297.0L703.8 297.2L702.5 296.6L703.7 291.3L705.2 289.0L705.5 286.7L704.5 284.4L705.2 281.4L704.5 280.9L705.1 276.3L706.6 273.4L708.4 274.0L711.8 271.5L712.3 269.3L713.3 268.5L713.6 265.4L716.7 264.5L724.5 256.2L729.9 256.1L733.0 256.9L736.5 254.1L740.5 254.3L742.9 253.4L744.3 255.8L743.1 256.1L748.4 259.8L751.7 260.3L753.8 259.4L758.8 260.1L762.8 257.0L759.7 256.7L758.3 253.8L756.1 252.1L758.7 250.3L759.3 251.3L765.7 251.8L767.8 253.1L763.5 256.4L763.6 257.5L764.8 257.8L770.4 256.5L778.3 256.2L782.9 256.4L782.0 257.3L784.8 256.7L787.9 257.9L792.4 256.2L798.0 257.9L801.1 257.9L802.2 257.4L803.0 255.2L805.1 254.9L802.2 252.8L799.0 253.7L797.2 253.2L792.5 251.0L793.1 249.6L799.5 245.6L809.4 244.7L813.1 242.8L813.9 243.8L816.4 242.0L817.6 242.2L818.7 243.6L825.1 242.1L830.8 242.5L831.3 241.6L831.0 240.6L825.8 241.0L822.2 239.5L814.3 239.8L812.6 240.7L811.0 239.2L811.3 238.4L810.5 237.7L808.5 238.3L809.8 237.1L808.8 235.7L800.9 230.8L800.3 228.6L802.1 226.6L803.0 223.7L802.3 223.2L805.7 219.7L807.7 219.3L829.5 223.4L837.9 223.6L840.6 222.6L842.7 220.4L845.7 222.0L861.1 226.4L874.4 225.9L879.8 221.6L880.7 217.6L879.9 216.9L880.1 216.0L882.4 215.6L883.3 214.4L888.6 212.3L895.7 207.6L905.4 202.8L908.8 198.0L911.7 197.6L912.8 196.4L913.3 197.0L920.4 192.7L922.6 192.8L930.9 190.8L944.1 184.6L977.7 187.8L982.8 186.6L985.4 187.6L989.8 187.9L993.3 187.2L996.3 185.1L998.3 181.0L1000.8 181.3L1001.5 183.1L1003.5 184.5L1006.2 183.6L1007.2 184.7L1003.9 185.2L1003.3 189.4L1007.0 193.9L1006.5 194.2L1007.5 196.1L1009.9 198.2L1013.3 199.3L1013.3 419.5L1011.5 420.7ZM997.6 -11.3L996.5 -12.1L996.1 -10.7L993.7 -8.5L994.1 -3.7L995.8 3.5L1001.5 15.8L1011.1 30.0L1013.3 31.6L1013.3 47.5L1012.1 48.2L1012.2 50.2L1010.6 49.0L1009.9 49.6L1009.1 49.1L1007.2 51.6L1005.1 52.2L1002.7 57.3L1001.3 57.0L1000.2 55.3L998.4 55.0L996.3 56.1L991.9 56.0L982.3 60.3L979.3 64.9L977.7 68.9L975.7 68.9L974.8 70.7L972.7 71.4L970.1 74.5L964.6 76.6L961.7 75.6L958.0 75.9L954.8 74.5L952.6 71.2L950.6 71.5L945.7 67.5L947.9 66.1L952.4 65.4L950.5 64.7L951.6 61.7L950.5 57.7L952.0 54.6L953.6 53.6L954.0 50.8L952.1 43.1L951.2 42.0L946.5 38.6L942.0 40.2L941.3 39.1L939.1 38.3L936.0 34.7L930.0 30.8L924.3 30.5L922.1 32.4L919.7 32.4L917.1 31.5L916.1 28.2L917.5 25.9L921.5 22.9L923.5 22.4L925.3 20.8L927.6 20.9L927.6 19.3L928.9 17.7L939.2 12.3L938.6 11.1L939.0 10.3L941.0 11.9L942.2 11.8L949.4 7.0L951.0 7.6L954.0 5.7L956.4 6.7L956.5 4.1L959.2 3.4L956.1 2.0L954.0 2.4L954.9 1.0L954.4 0.6L954.8 -0.7L954.3 -3.3L954.9 -4.3L953.8 -7.0L952.4 -7.2L951.1 -5.8L951.9 -4.2L950.2 -3.9L949.9 -3.3L950.5 -2.2L947.5 -2.6L945.3 -5.0L943.0 -4.5L943.9 -6.3L940.5 -6.2L941.2 -10.8L939.2 -7.4L937.4 -6.5L934.1 -8.2L934.4 -6.8L933.9 -6.1L930.0 -5.5L925.5 -6.5L916.8 -3.7L908.7 -6.2L908.1 -8.5L909.0 -9.8L907.1 -9.3L904.3 -10.1L901.7 -12.8L900.6 -12.4L896.2 -15.4L896.1 -13.4L893.4 -13.7L892.2 -15.3L893.9 -16.8L898.9 -16.9L901.9 -19.3L1007.0 -19.3L1002.5 -13.0L997.6 -11.3ZM352.3 350.0L352.0 351.1L352.5 351.1L350.0 356.0L340.4 369.7L340.7 372.0L338.8 377.8L336.6 380.9L336.6 387.2L337.0 388.2L341.7 390.8L342.0 391.8L341.5 391.3L340.7 392.4L340.2 391.4L339.4 392.9L340.5 395.1L341.6 395.0L341.0 395.4L341.6 396.7L343.4 397.4L343.4 399.0L342.9 398.7L342.8 399.6L344.0 399.9L344.4 401.1L342.3 401.6L342.3 402.7L338.6 404.8L336.5 410.0L337.8 415.1L336.5 416.0L333.6 414.0L332.7 414.6L329.4 412.8L326.0 414.1L322.8 413.0L322.0 411.9L319.4 410.7L316.2 410.2L313.2 403.9L309.3 399.8L304.2 396.9L296.5 397.4L294.4 395.8L290.5 394.5L285.6 390.2L281.8 389.1L275.9 385.1L272.5 381.2L267.5 381.0L266.7 379.2L264.8 377.8L255.3 377.9L252.6 374.3L250.2 373.7L247.6 368.2L248.8 367.1L249.3 364.6L248.8 363.3L250.1 359.7L249.8 358.7L252.5 356.6L253.6 357.0L255.4 354.7L256.8 354.9L257.5 354.3L257.7 351.4L258.7 351.9L260.6 356.3L263.4 358.4L268.7 356.1L268.5 353.6L270.0 351.6L273.6 352.1L274.6 350.8L277.3 350.3L279.1 352.3L279.7 355.2L283.8 354.9L284.7 355.6L284.9 357.2L288.4 359.6L293.0 360.7L300.7 357.5L302.8 358.6L309.1 359.0L314.4 357.5L317.1 357.7L321.2 356.2L324.5 352.9L330.2 351.7L336.3 354.2L339.2 353.0L341.4 349.4L341.2 348.4L341.5 350.4L343.1 350.8L346.7 349.7L351.0 346.8L355.1 347.9L352.3 350.0ZM158.7 256.8L157.1 257.8L154.2 262.3L155.2 267.5L157.7 270.2L156.2 275.5L156.6 276.7L157.3 276.7L156.1 278.4L156.6 280.2L155.7 282.8L155.9 286.1L154.3 295.4L154.8 296.2L153.4 301.7L153.5 303.0L154.5 304.2L153.6 304.6L152.3 306.8L152.7 309.0L152.2 310.6L150.8 311.6L150.6 312.5L149.9 311.3L148.1 311.7L143.1 307.5L140.5 307.2L138.9 309.0L135.8 306.3L133.8 305.7L134.6 307.3L136.0 307.4L133.9 310.7L134.8 314.8L134.2 317.2L128.4 322.2L123.9 319.9L122.3 320.8L121.4 322.8L121.4 321.7L120.0 321.3L120.5 319.3L120.1 318.5L119.3 318.7L118.7 314.6L116.8 314.3L117.3 313.4L116.8 313.1L116.1 313.6L115.5 311.9L114.7 311.9L114.5 309.9L113.7 309.7L112.4 307.5L114.4 304.0L112.5 300.7L113.5 298.6L112.9 296.8L115.4 292.2L114.8 284.4L115.6 284.5L117.2 286.7L118.9 286.8L116.8 285.9L118.2 283.2L117.3 284.1L118.5 280.2L117.4 278.2L115.4 277.5L114.5 278.2L115.4 278.2L114.5 280.0L114.6 279.2L113.2 277.6L113.6 272.8L112.6 272.3L115.6 271.1L116.3 269.3L115.4 266.7L115.9 261.1L114.7 259.4L112.9 258.5L113.2 255.3L112.7 253.3L111.1 251.5L109.7 247.8L107.2 248.9L106.5 248.5L107.2 247.0L106.4 246.8L105.4 249.2L104.9 247.9L104.7 246.5L105.8 245.8L106.6 243.6L104.5 241.9L107.2 235.2L107.0 233.7L106.0 233.1L106.4 231.6L107.0 231.1L107.6 231.6L107.8 233.9L110.3 236.6L117.4 237.6L119.9 236.5L121.4 234.5L123.6 233.5L125.5 233.8L127.4 232.3L129.4 228.9L130.8 228.3L133.5 224.6L138.1 223.2L139.0 219.2L141.0 218.3L142.3 219.5L142.2 221.0L142.6 221.3L142.8 220.2L142.8 221.3L144.4 221.7L144.5 220.6L147.4 222.0L147.0 222.9L148.1 224.1L148.1 225.9L149.0 223.5L150.8 223.4L150.8 224.1L152.0 224.4L152.1 225.7L151.5 226.5L151.3 225.9L150.4 229.3L151.4 228.3L151.8 229.6L153.9 229.1L155.4 229.9L152.9 230.2L152.4 232.8L150.1 233.2L152.4 234.1L154.7 233.5L153.8 234.7L155.4 236.2L157.5 236.8L155.3 238.8L156.8 240.6L158.1 244.0L158.6 247.8L160.9 250.7L158.7 256.8ZM118.2 175.0L123.0 172.8L120.8 171.1L120.2 171.5L120.0 171.0L121.2 170.2L120.4 169.6L118.4 170.2L118.4 168.1L120.0 168.0L120.6 166.6L122.0 166.1L122.6 164.2L121.9 163.8L122.2 162.5L123.9 161.6L123.6 159.4L126.2 160.1L126.8 158.1L135.0 155.6L137.3 152.4L141.2 152.9L143.1 155.0L144.8 151.7L144.5 149.0L143.5 147.6L144.4 146.3L144.3 144.6L145.3 143.5L144.9 140.1L147.4 139.5L148.8 140.7L148.5 141.9L149.0 142.9L149.4 149.2L148.1 156.6L149.2 159.4L150.4 160.0L149.7 157.9L150.9 160.1L152.0 178.9L151.5 180.8L146.8 187.6L146.7 198.6L145.7 199.6L145.9 200.8L144.8 201.6L144.9 202.5L143.1 202.2L142.6 203.4L144.8 203.1L145.0 204.2L142.2 206.4L142.4 209.2L140.4 210.1L140.8 211.0L140.4 211.9L141.7 211.0L140.8 213.5L136.5 212.1L137.4 210.7L135.6 209.5L136.0 208.6L134.6 209.5L134.6 208.9L131.2 208.3L126.4 205.1L126.5 204.2L125.9 203.7L126.7 201.6L129.1 201.1L130.8 199.1L126.3 198.3L126.2 197.0L123.2 197.6L123.4 197.0L121.8 196.7L123.9 195.7L123.6 194.2L126.2 193.3L125.0 192.4L126.4 191.8L125.9 191.2L126.8 189.6L125.5 188.4L120.5 189.9L120.5 188.0L119.5 186.9L121.8 186.4L122.2 184.8L124.8 182.9L123.3 180.6L122.0 180.7L118.7 178.5L119.8 177.6L118.9 177.6L119.4 176.7L119.1 175.6L118.2 175.0ZM985.5 457.8L971.3 467.1L968.1 471.2L965.7 470.9L964.1 472.7L963.3 477.3L968.4 482.7L970.0 485.5L967.1 484.5L965.2 484.8L962.1 486.6L958.7 484.9L956.0 485.4L954.9 486.8L954.4 490.0L953.5 491.3L951.5 491.6L950.4 492.8L948.0 493.7L946.7 493.2L946.6 494.4L942.0 496.2L936.2 496.4L933.7 499.3L934.3 501.5L931.4 501.5L930.5 498.0L927.8 497.4L923.6 498.4L915.3 495.3L913.8 494.0L912.6 490.2L911.0 488.7L910.2 484.0L909.2 482.1L909.6 480.1L912.4 482.3L915.0 481.6L918.5 476.8L921.7 476.4L927.6 478.0L928.8 477.6L931.0 474.5L931.2 470.3L930.7 467.8L935.7 469.4L947.6 470.6L955.3 469.4L959.5 467.0L961.2 467.3L967.9 464.8L971.0 463.2L972.7 461.4L977.3 460.1L986.4 455.8L985.5 457.8ZM710.7 476.0L708.0 482.4L704.4 484.1L699.5 482.4L693.6 483.8L686.7 483.5L683.5 484.7L678.3 484.4L670.3 486.6L658.0 486.8L658.6 482.3L657.3 480.2L652.2 479.7L650.0 477.8L646.8 476.9L646.7 476.2L643.1 476.6L640.1 475.7L635.0 476.2L632.9 474.5L630.1 474.6L627.6 473.7L622.8 474.8L620.4 474.5L617.3 471.5L618.4 470.9L618.0 468.8L619.1 466.3L618.7 465.6L619.3 460.5L620.2 459.0L620.7 462.6L622.0 463.6L623.9 463.1L624.3 461.4L623.7 457.5L625.0 456.0L626.0 456.6L626.0 460.5L627.2 462.2L634.2 462.8L635.3 461.5L636.5 461.4L636.1 459.9L637.2 459.5L639.4 460.1L640.1 461.9L639.4 463.1L636.0 463.0L635.7 463.7L639.6 465.6L641.7 464.5L642.2 468.9L644.7 469.8L657.4 466.6L661.4 467.6L663.2 466.7L665.3 467.6L665.7 466.7L668.4 467.6L668.5 469.5L669.2 470.0L679.2 470.0L681.8 472.0L688.7 469.8L692.2 470.3L690.8 472.0L691.0 473.2L691.7 472.5L692.0 473.4L691.1 474.0L690.4 476.6L691.0 478.6L693.2 479.3L694.3 479.0L696.6 476.5L699.3 476.1L702.0 474.5L704.0 475.3L703.6 475.7L704.3 476.1L706.0 475.6L708.7 472.4L709.8 472.3L709.8 471.2L710.7 471.2L710.4 471.9L708.9 473.4L710.0 476.5L710.7 476.0ZM650.3 361.2L649.2 361.2L647.7 358.7L646.2 359.7L646.7 360.4L645.7 360.8L643.8 358.4L644.2 357.8L642.9 356.0L640.1 355.8L640.4 354.3L639.4 353.9L640.4 352.6L639.5 350.4L637.5 350.4L638.8 348.3L638.4 347.7L637.0 348.7L637.2 347.9L636.7 347.9L637.4 346.5L634.2 345.6L635.6 344.7L634.7 342.6L621.6 342.4L620.5 340.0L619.8 340.4L621.2 338.3L620.5 335.9L616.8 334.2L616.6 332.8L614.9 330.8L606.7 324.3L604.8 323.4L602.3 323.6L601.2 322.4L599.0 321.8L598.5 322.2L599.7 322.8L599.4 323.6L594.4 324.6L594.6 323.2L601.2 320.2L601.5 319.3L602.9 319.0L603.1 317.5L604.2 316.8L610.0 315.2L612.4 316.6L612.8 318.4L614.2 319.0L616.0 323.9L619.8 326.0L619.8 326.8L624.1 327.2L625.1 329.0L628.6 330.6L635.8 330.7L638.5 331.9L637.5 332.6L637.5 334.2L641.0 337.4L639.6 339.5L639.5 340.9L640.1 342.1L639.5 342.3L641.7 347.2L641.7 349.9L644.8 352.9L646.4 352.7L649.3 353.7L652.9 352.9L652.7 356.0L653.1 357.0L652.5 359.4L650.3 361.2ZM718.0 316.2L717.6 313.4L716.3 312.1L714.6 312.6L718.2 316.6L718.2 317.5L714.1 318.4L705.2 315.9L702.9 313.4L707.5 311.3L709.8 309.4L709.3 308.6L706.2 308.3L702.1 313.1L696.3 310.8L694.5 309.3L695.2 307.5L694.7 307.2L697.2 304.2L697.9 305.1L701.1 304.9L701.6 304.0L702.0 304.6L705.4 303.1L705.5 300.7L712.1 300.7L711.8 301.7L713.9 302.8L712.7 305.1L718.0 309.9L717.7 310.5L720.4 314.9L719.9 316.5L718.0 316.2ZM772.3 432.8L768.7 438.3L769.9 438.8L769.2 440.0L769.7 440.8L766.4 440.5L764.4 442.0L760.9 446.6L759.3 447.6L757.8 446.6L757.1 445.0L758.5 441.6L758.6 439.6L756.1 436.6L759.1 434.9L760.3 431.8L763.3 429.0L770.6 425.4L772.8 425.6L774.1 424.2L774.7 425.0L774.2 425.8L774.5 427.7L773.7 428.3L772.3 432.8ZM705.1 339.8L704.6 341.8L705.5 346.8L703.8 347.6L703.7 350.2L701.3 351.1L700.3 353.0L698.8 352.3L697.0 350.0L696.3 350.3L696.3 349.1L695.5 349.2L695.9 347.9L698.8 346.8L699.7 345.0L699.5 343.0L698.4 342.4L698.1 340.4L695.8 339.1L694.5 337.2L695.0 335.0L699.8 333.9L702.1 334.5L703.6 336.6L703.9 335.7L704.8 335.6L705.5 336.6L704.8 338.7L704.1 338.9L705.1 339.8ZM517.0 354.9L515.6 351.4L517.0 352.0L514.8 347.9L514.3 348.5L514.2 352.2L512.7 353.2L511.3 351.1L513.1 346.9L513.3 344.2L513.6 345.0L514.2 344.2L516.0 346.5L517.7 345.3L517.7 343.0L518.4 343.3L517.9 339.5L519.1 339.5L520.9 345.0L520.0 346.8L521.4 348.9L522.7 347.6L522.5 348.3L525.0 351.3L526.9 355.4L526.5 356.8L524.5 357.0L520.5 354.5L519.4 354.7L518.8 355.8L517.0 354.9ZM503.9 301.1L496.0 297.5L494.3 292.4L491.6 290.3L490.6 288.0L489.4 287.7L489.1 285.8L488.4 286.2L488.3 285.0L487.5 284.7L488.9 282.8L493.3 282.4L495.1 281.4L498.3 282.9L497.8 285.1L494.5 287.2L495.3 288.3L494.8 288.9L497.6 290.1L497.5 291.0L496.7 291.0L497.9 296.7L501.1 298.1L502.7 297.8L503.9 301.1ZM681.7 274.3L680.1 275.4L679.6 277.3L678.3 277.9L679.0 278.2L678.0 279.3L679.0 281.8L678.3 283.0L676.5 282.2L676.3 281.2L674.6 280.0L676.0 278.6L675.0 277.4L673.2 278.5L674.2 278.8L672.6 280.5L673.4 280.7L673.8 282.4L671.4 281.8L672.2 279.9L671.2 280.9L670.7 280.0L668.2 280.9L668.9 280.0L668.2 279.1L668.9 277.3L667.8 274.0L674.2 273.4L676.2 275.8L678.3 274.6L679.4 272.8L681.7 272.2L681.2 272.8L681.7 274.3ZM733.4 372.0L729.0 374.6L726.2 374.5L725.4 372.7L723.6 371.7L719.9 373.2L719.3 370.5L721.9 368.4L725.7 367.5L728.1 367.7L732.2 370.3L731.5 368.5L733.1 368.2L735.6 369.1L734.4 370.0L735.5 371.0L735.4 372.0L733.4 372.0ZM198.9 535.3L198.6 536.6L198.6 535.2L198.0 535.4L196.3 538.9L195.7 538.4L195.9 537.0L194.2 535.3L192.1 536.5L191.3 535.9L191.2 529.1L192.4 528.6L196.6 529.3L197.7 528.6L201.6 531.9L202.0 532.5L198.9 535.3ZM317.8 64.7L315.8 65.4L314.3 63.7L313.2 61.3L313.2 59.2L312.3 58.8L312.1 56.2L311.0 55.4L309.8 51.9L310.1 50.2L312.9 51.8L313.0 49.4L313.7 49.6L309.3 42.2L310.5 39.4L311.9 39.6L312.9 45.7L313.9 47.7L315.8 48.9L315.1 51.2L315.6 56.7L315.1 57.0L315.8 58.6L315.7 61.3L317.1 63.4L317.0 64.2L317.8 64.7ZM320.1 46.0L320.6 46.4L316.2 45.8L314.2 43.4L315.4 42.8L315.9 41.5L317.7 41.2L318.3 37.1L317.8 36.3L318.3 35.8L319.9 36.3L319.5 36.7L320.8 39.3L319.9 39.7L322.2 39.9L322.2 43.4L324.7 44.1L324.7 45.5L327.2 48.6L325.4 48.6L324.9 49.0L325.2 50.0L323.5 50.1L321.0 48.6L320.9 45.8L320.1 46.0ZM686.0 400.9L685.1 402.9L681.7 405.0L680.8 403.0L679.6 402.2L679.4 400.2L678.1 398.2L684.5 393.2L685.8 394.2L686.4 395.7L686.0 400.9ZM530.7 370.9L528.1 372.2L528.2 374.2L527.2 374.3L520.6 367.1L520.6 365.3L522.9 362.6L523.6 362.8L524.7 365.4L529.5 367.5L530.6 369.5L532.9 371.0L533.2 372.3L530.7 370.9ZM381.3 125.0L381.8 124.1L380.9 122.2L389.6 123.0L393.7 124.1L393.2 124.4L396.4 126.0L394.9 127.8L387.6 128.2L383.4 127.3L380.7 125.7L380.2 125.0L381.3 125.0ZM658.9 244.5L659.3 247.0L658.5 246.7L654.7 248.9L652.9 246.6L650.6 245.9L650.4 244.6L652.2 240.7L654.7 238.6L657.7 239.5L659.4 241.3L658.6 242.2L659.5 242.8L658.9 244.5ZM664.2 371.8L663.1 369.4L660.6 367.0L660.0 367.4L659.2 365.4L658.0 364.2L657.2 364.7L656.1 362.4L656.5 361.1L659.3 359.6L661.0 361.2L661.4 363.0L665.5 364.0L664.8 366.2L666.2 367.4L665.3 369.1L666.5 370.0L665.3 372.0L665.5 372.8L664.2 371.8ZM379.3 131.0L383.2 130.3L386.1 131.6L384.0 129.8L385.4 129.8L388.7 130.4L390.9 132.7L395.5 132.5L406.4 134.4L389.0 134.5L381.5 132.5L379.3 131.0ZM520.1 326.4L522.9 323.4L523.9 324.6L524.3 328.3L523.2 330.3L523.5 330.7L524.1 329.5L524.0 332.5L523.6 333.0L523.2 332.5L523.4 333.4L522.9 333.1L522.7 333.9L521.6 333.8L521.6 334.8L520.1 333.0L518.2 335.4L518.7 330.2L520.1 326.4ZM739.4 464.9L739.0 466.4L737.9 467.6L738.1 466.9L736.4 465.6L737.3 464.3L737.1 461.5L735.6 459.4L737.2 457.8L737.6 455.7L738.5 454.7L738.6 451.3L740.7 450.1L740.6 454.4L738.7 457.4L738.6 458.8L740.7 461.5L740.1 462.5L741.2 463.9L741.1 464.8L739.4 464.9ZM690.3 269.0L688.8 268.0L690.6 265.7L697.1 263.3L699.1 264.2L698.8 267.0L700.4 266.6L700.4 267.4L699.7 267.8L695.2 269.1L690.3 269.0ZM399.1 143.6L395.0 144.8L389.1 143.8L387.9 143.2L390.2 141.6L387.7 141.0L390.7 140.7L394.1 142.0L401.1 141.0L404.4 141.6L406.7 143.8L399.1 143.6ZM737.7 411.6L734.9 411.0L733.1 411.9L732.2 413.9L732.4 415.0L730.6 413.4L730.9 411.4L732.0 410.7L732.9 411.3L735.4 408.3L738.8 406.2L742.7 405.5L745.2 407.3L740.5 409.0L737.7 411.6ZM329.5 67.3L329.3 65.9L331.3 66.6L333.5 69.3L334.7 69.7L335.9 71.8L333.6 70.8L333.8 70.2L332.4 69.3L330.4 68.9L332.2 69.9L334.9 73.9L336.6 75.0L334.7 72.1L341.8 78.5L338.8 77.2L340.5 78.6L340.7 79.8L337.7 78.8L339.1 80.4L337.6 79.8L336.6 78.5L337.0 77.9L336.3 76.9L337.2 76.3L335.0 75.9L334.0 74.3L329.9 71.5L330.6 70.8L329.2 68.2L324.5 61.5L329.5 67.3ZM601.7 437.1L599.7 437.4L597.0 434.6L596.7 429.1L598.2 427.0L600.4 430.4L603.5 433.3L601.9 434.2L601.7 437.1ZM317.6 451.3L312.7 449.6L311.4 448.0L310.7 444.2L312.6 443.3L311.6 444.2L314.3 444.5L316.9 446.0L318.9 449.4L317.6 451.3ZM702.2 379.8L699.7 380.1L699.1 379.2L702.0 375.2L706.6 375.1L709.4 373.3L712.1 372.8L707.7 377.7L704.3 378.3L702.2 379.8ZM179.6 151.0L181.0 152.9L180.5 153.5L177.9 150.9L177.1 151.9L176.8 151.2L175.5 151.9L174.8 151.3L174.5 152.3L171.6 152.2L170.2 151.3L170.0 150.1L171.9 148.6L174.7 149.2L175.5 149.1L175.7 148.1L177.6 148.2L177.4 148.8L178.2 149.1L180.4 146.0L181.4 147.3L181.0 149.9L179.6 151.0ZM655.5 326.6L654.2 326.9L653.4 325.9L652.2 327.2L651.1 325.7L652.5 325.2L651.9 323.6L650.2 323.7L649.3 322.2L647.9 322.2L648.7 320.8L648.7 318.4L649.7 317.8L652.5 319.9L652.6 322.3L656.0 325.4L655.5 326.6ZM671.8 402.2L670.1 401.1L670.4 399.0L671.9 397.9L671.2 397.7L673.7 395.6L674.6 395.3L674.1 396.0L675.3 396.4L675.5 395.3L676.4 395.3L675.4 397.9L676.0 399.6L673.5 402.1L671.8 402.2ZM666.0 373.5L668.6 373.2L669.6 374.6L674.9 375.5L675.3 376.9L674.2 379.1L672.3 379.1L666.6 374.9L666.0 373.5ZM1005.4 -6.2L999.4 -3.7L1001.7 -6.2L1001.5 -6.8L1006.7 -8.8L1010.9 -15.4L1011.5 -17.4L1009.7 -16.2L1008.9 -16.9L1008.8 -19.3L1013.3 -19.3L1013.3 -18.3L1007.0 -8.2L1005.4 -6.2ZM681.5 252.8L685.9 251.3L689.1 252.5L689.9 253.7L689.8 254.9L685.6 256.4L681.5 252.8ZM651.3 414.9L644.2 416.2L644.1 415.6L644.7 413.6L644.2 413.3L645.1 411.9L647.6 414.1L649.0 413.9L647.0 411.9L647.3 411.2L649.1 412.2L651.1 411.3L651.5 411.9L651.3 414.9ZM702.5 406.1L697.8 407.9L696.0 410.2L691.9 411.2L691.3 410.2L694.8 409.6L695.4 408.5L694.8 407.9L699.1 405.9L698.4 405.0L699.9 404.2L702.5 406.1ZM115.3 314.9L114.6 318.4L113.7 318.6L111.6 314.3L111.5 312.8L112.0 311.9L114.8 312.6L115.3 314.1L116.1 314.0L115.3 314.9ZM753.5 248.6L751.2 247.5L751.0 245.4L754.4 244.8L757.6 245.7L757.8 246.5L757.1 246.9L753.5 248.6ZM642.5 379.3L643.0 374.6L644.3 373.7L644.3 372.9L645.8 372.8L646.8 374.1L646.5 375.4L643.1 379.6L642.5 379.3ZM731.7 400.7L729.6 398.7L729.7 397.9L732.9 399.6L732.4 399.9L733.6 401.6L734.7 401.3L734.7 403.9L733.1 403.6L732.8 404.6L731.5 404.7L730.4 403.9L731.7 400.7ZM204.4 497.7L205.7 495.1L205.8 493.9L207.4 494.3L207.3 492.9L208.5 491.1L210.0 491.6L208.9 493.2L210.2 494.5L209.9 495.1L204.4 497.7ZM884.1 -15.1L883.5 -18.0L884.1 -17.7L885.1 -14.3L887.3 -12.5L902.4 -8.8L905.5 -7.2L891.2 -10.6L886.0 -12.6L884.1 -15.1ZM337.8 97.9L340.0 100.0L337.4 98.3L333.4 91.9L329.0 87.8L328.3 86.1L331.8 89.5L333.6 90.0L333.3 90.6L334.1 90.9L334.7 93.1L340.7 98.9L337.8 97.9ZM675.5 411.5L676.9 410.2L678.3 412.2L680.0 413.0L679.8 415.0L679.1 416.0L677.9 415.4L676.0 413.0L675.1 413.0L675.5 411.5ZM373.7 138.7L369.6 139.7L368.8 139.5L369.5 139.1L369.3 137.8L368.3 137.3L371.0 136.2L375.1 136.7L373.7 138.7ZM321.9 57.0L323.5 57.3L323.3 56.4L324.2 57.0L322.9 54.8L324.6 54.5L325.2 55.3L324.7 56.0L327.4 58.3L328.6 60.9L328.3 61.5L324.7 58.0L325.1 59.0L323.3 58.6L321.9 57.0ZM715.5 419.0L712.4 419.4L711.6 421.8L710.6 422.1L708.9 420.4L708.7 418.8L709.8 418.4L711.4 419.6L712.2 418.7L713.1 418.9L713.0 417.6L712.1 417.0L713.1 416.8L715.5 419.0ZM676.9 384.4L677.1 381.2L678.3 380.3L679.2 382.0L679.8 380.9L682.2 382.2L681.9 382.9L680.3 383.3L680.1 384.1L676.9 384.4ZM616.6 361.0L614.1 361.3L615.2 360.7L614.3 360.1L615.7 360.4L616.5 359.5L617.7 359.8L618.2 361.6L619.1 361.6L618.0 362.2L617.3 363.9L615.6 364.5L613.4 363.6L614.6 362.2L615.6 362.5L616.6 361.0ZM410.8 149.8L413.1 149.3L412.4 149.8L422.0 151.9L425.0 154.1L412.9 150.7L412.5 151.2L410.8 149.8ZM525.5 345.9L524.0 346.2L522.9 345.3L520.6 339.2L521.2 339.5L521.8 338.3L522.4 338.5L522.0 340.0L523.6 340.7L522.5 343.6L524.6 343.3L525.2 343.8L524.6 343.8L525.5 345.9ZM647.7 382.9L649.4 384.4L649.3 385.3L648.8 385.1L647.1 388.1L645.6 388.7L646.7 386.1L646.5 384.4L645.6 384.4L645.8 383.3L648.1 381.2L647.7 382.9ZM619.6 308.1L624.3 310.7L624.2 311.4L626.4 311.9L624.7 313.6L622.2 313.0L622.3 311.9L619.6 308.1ZM657.0 405.6L655.6 402.5L655.9 401.6L654.7 400.5L654.7 399.6L656.8 400.2L658.8 403.4L657.0 405.6ZM733.6 467.8L729.2 469.8L728.3 468.8L730.0 466.7L733.7 466.2L733.6 467.8ZM662.7 386.4L663.0 385.0L662.0 385.0L662.7 383.8L662.3 383.5L663.3 382.8L663.2 380.2L664.3 380.3L665.5 384.6L662.7 386.4ZM315.3 69.1L314.1 67.6L312.1 67.6L312.8 66.2L311.2 60.9L313.2 62.3L313.7 66.3L317.8 71.8L317.1 71.9L314.6 68.9L315.3 69.1ZM230.8 409.5L231.5 408.2L232.9 409.0L233.3 408.5L235.1 410.4L235.1 411.3L234.4 412.4L233.2 412.2L230.8 409.5ZM617.2 372.8L615.2 372.6L615.6 371.7L614.5 370.9L614.2 369.4L618.8 369.4L617.2 372.8ZM920.6 -2.9L929.4 -2.7L930.5 -1.9L932.6 -2.6L935.2 -1.2L934.7 -0.6L920.6 -2.9ZM650.9 393.3L651.1 396.2L650.6 395.6L649.9 397.0L648.6 395.9L647.4 396.4L647.9 393.9L649.5 393.0L650.9 393.3ZM681.6 429.2L678.7 428.4L680.3 428.1L681.2 426.9L680.7 424.4L679.0 423.5L680.6 423.6L682.6 425.6L683.0 427.5L681.6 429.2ZM762.6 420.7L760.9 421.3L761.6 420.4L759.7 419.6L760.3 419.3L758.7 419.3L759.6 417.6L762.0 416.3L760.5 417.9L762.6 417.6L762.1 418.2L762.6 420.7ZM747.6 427.2L745.9 427.3L745.0 425.3L743.8 426.1L743.1 425.1L743.4 423.5L743.7 424.2L745.6 423.6L746.7 426.1L748.1 425.9L747.6 427.2ZM346.2 95.9L348.2 99.5L345.3 98.0L342.0 93.8L346.2 95.9ZM340.0 91.6L339.6 92.1L337.4 90.0L335.6 88.1L335.4 86.8L340.9 91.2L341.8 93.5L340.0 91.6ZM373.8 122.2L373.5 121.4L375.9 121.4L379.7 124.4L378.3 124.8L373.8 122.2ZM307.4 442.3L306.2 441.7L306.1 440.4L308.6 440.0L311.1 441.7L307.4 442.3ZM627.8 310.7L631.9 304.6L631.7 305.2L632.4 305.3L630.7 308.8L628.8 310.8L627.8 310.7ZM107.6 228.1L109.2 226.9L109.3 225.3L110.9 224.4L111.4 226.7L108.4 228.0L108.2 230.3L107.0 230.2L107.6 228.1ZM295.0 242.5L295.4 240.4L298.2 241.2L298.9 242.5L296.3 243.4L295.0 242.5ZM108.5 312.4L107.7 309.6L110.2 308.7L110.2 312.5L108.5 312.4ZM396.8 152.4L394.5 152.5L393.7 151.6L394.1 151.0L393.4 151.0L395.3 150.1L397.8 150.7L396.8 152.4ZM728.3 397.5L727.9 396.9L728.4 396.4L727.2 396.6L727.2 395.5L725.8 394.0L726.9 393.2L728.3 393.8L728.1 394.9L729.6 396.7L728.3 397.5ZM613.2 310.7L615.7 307.8L617.1 309.3L615.3 311.3L613.2 310.7ZM686.8 336.9L685.4 336.9L685.4 335.7L684.2 333.9L686.3 333.6L687.4 334.8L686.8 336.9ZM616.6 388.2L612.5 388.7L615.5 386.7L619.6 386.1L616.8 387.0L616.6 388.2ZM201.9 499.4L198.8 498.0L199.6 497.4L203.7 497.9L201.9 499.4ZM720.2 387.4L718.3 388.0L718.8 388.7L718.6 390.3L717.6 389.0L717.9 386.0L719.4 386.1L720.2 387.4ZM650.7 409.2L652.1 408.1L653.6 408.5L652.4 410.7L651.3 410.6L650.7 409.2ZM699.3 281.0L702.6 280.6L702.7 282.5L702.0 283.1L699.3 281.0ZM666.6 292.8L668.2 293.5L666.2 296.9L665.8 294.9L666.6 292.8ZM332.5 338.8L331.8 339.2L332.2 340.4L331.6 340.5L330.0 339.2L330.8 337.4L331.9 337.4L332.5 338.8ZM824.4 19.5L828.6 16.8L837.5 9.0L830.3 16.0L826.9 18.4L824.4 19.5ZM670.5 414.0L672.9 413.3L671.0 415.8L668.9 416.7L670.5 414.0ZM716.7 378.1L716.8 379.5L715.8 377.8L715.8 376.4L716.6 377.1L717.1 376.5L716.5 374.9L717.1 374.2L718.0 375.8L716.7 378.1ZM695.2 428.1L691.5 428.3L691.0 427.4L692.3 426.5L695.2 428.1ZM195.4 169.0L196.1 167.8L197.1 168.6L198.0 170.6L197.0 170.8L195.4 169.0ZM325.4 75.0L326.8 75.4L326.7 78.4L325.2 77.4L325.4 75.0ZM634.9 489.9L637.6 489.6L637.8 491.6L636.2 491.1L634.9 489.9ZM942.1 634.4L935.9 634.6L931.2 637.3L936.8 633.7L942.1 634.4ZM737.5 419.1L739.5 417.6L740.2 418.8L739.9 419.6L738.0 419.8L737.5 419.1ZM159.5 139.0L160.9 136.8L161.8 138.2L160.8 139.9L159.5 139.0ZM752.7 253.0L753.6 251.7L754.7 252.2L754.5 253.4L755.2 254.2L753.2 253.8L752.7 253.0ZM723.7 336.7L724.9 339.4L724.4 340.2L723.1 339.1L723.7 336.7ZM669.6 399.9L668.7 402.7L669.4 403.6L668.2 402.9L667.5 401.3L669.6 399.9ZM617.5 379.8L616.0 380.3L614.5 379.5L616.1 378.3L617.5 379.8ZM635.4 304.2L634.7 302.8L635.3 301.5L636.5 302.2L636.1 303.9L635.4 304.2ZM353.5 109.3L355.0 109.4L358.0 111.5L355.7 111.0L353.5 109.3ZM599.5 424.2L597.5 423.7L598.4 422.2L599.2 422.1L599.5 424.2ZM525.4 332.4L526.7 334.3L525.1 333.0L524.6 331.9L526.1 330.9L526.8 331.5L525.4 332.4ZM334.2 79.7L336.6 79.9L337.9 80.9L334.8 80.8L334.2 79.7ZM331.6 342.8L332.2 341.2L333.6 343.6L332.9 344.2L331.6 342.8ZM665.5 418.4L661.4 415.6L662.3 415.6L664.9 417.3L665.5 418.4ZM38.8 140.0L41.4 139.1L41.7 140.1L40.1 140.8L38.8 140.0ZM753.7 434.2L750.6 434.1L750.6 433.6L754.0 433.3L753.7 434.2ZM149.0 222.4L147.9 221.7L148.7 219.2L149.3 220.4L149.0 222.4ZM725.3 389.2L723.7 388.5L724.0 387.9L726.2 388.7L726.4 389.6L726.0 390.2L725.3 389.2ZM379.2 117.8L373.7 117.6L375.5 116.8L379.2 117.8ZM504.3 307.4L504.7 306.6L506.7 309.3L505.6 309.2L504.3 307.4ZM942.3 634.6L947.8 636.4L949.2 637.6L942.3 634.6ZM738.8 403.4L739.2 404.9L737.9 404.8L737.0 403.8L738.8 403.4ZM335.7 90.8L338.2 93.1L338.6 94.3L335.9 91.8L335.7 90.8ZM605.1 391.6L603.1 390.1L604.3 389.6L605.5 391.0L605.1 391.6ZM733.6 382.5L731.7 382.9L730.9 381.8L732.6 381.7L733.6 382.5ZM328.4 334.8L328.7 336.7L326.5 335.3L328.4 334.8ZM245.6 362.8L242.9 362.9L242.4 362.2L243.8 361.9L245.6 362.8ZM531.7 332.0L529.0 334.9L530.1 332.3L531.7 332.0ZM145.9 220.5L147.4 218.4L147.8 220.4L145.9 220.5ZM322.3 76.1L322.4 75.1L323.4 75.6L324.1 77.9L322.3 76.1ZM694.4 396.2L694.3 397.6L693.4 397.6L692.7 396.4L694.4 396.2ZM655.3 376.2L658.0 375.4L658.0 376.7L655.3 376.2ZM654.6 410.2L655.5 411.0L655.3 412.0L653.6 410.7L654.6 410.2ZM346.5 104.8L340.9 100.1L341.4 99.8L346.5 104.8ZM251.2 463.1L253.8 463.0L254.1 463.6L253.7 464.1L251.2 463.1ZM674.6 466.6L672.8 465.9L674.1 465.1L674.9 465.7L674.6 466.6ZM309.3 62.7L308.6 64.6L309.0 65.8L307.8 64.7L308.1 63.5L309.3 62.7ZM641.4 359.1L642.5 359.2L642.6 360.2L641.0 360.3L641.4 359.1ZM428.0 151.8L430.0 152.4L430.5 153.3L430.2 153.9L428.0 151.8ZM47.8 139.8L49.1 137.9L50.2 137.9L48.9 139.4L47.8 139.8ZM339.6 326.0L340.4 325.1L341.3 325.4L340.6 326.7L339.6 326.0ZM611.1 450.1L609.1 447.0L611.0 448.6L611.1 450.1ZM168.4 158.9L169.5 157.8L169.9 159.2L169.1 159.7L168.4 158.9ZM638.1 370.0L637.3 373.6L636.8 374.6L637.5 370.5L638.1 370.0ZM682.6 408.5L680.8 408.6L682.6 407.0L682.6 408.5ZM818.6 438.1L819.0 436.9L819.8 436.2L820.1 437.2L818.6 438.1ZM709.0 337.6L706.7 337.7L706.2 336.6L709.0 337.6ZM638.4 301.4L638.6 299.5L639.1 298.6L639.3 300.3L638.4 301.4ZM558.3 413.6L558.7 412.0L559.3 412.1L559.3 414.1L558.8 413.3L558.3 413.6ZM689.5 406.2L687.0 406.5L688.3 405.3L689.5 406.2ZM355.5 105.1L352.2 102.1L353.4 102.3L355.5 105.1ZM372.3 120.3L370.4 120.4L371.3 119.3L372.2 119.7L372.3 120.3ZM318.2 49.1L317.8 49.6L316.2 48.3L317.6 48.2L318.2 49.1ZM324.7 81.3L325.3 80.7L326.4 81.6L325.3 82.2L324.7 81.3ZM749.2 403.4L748.2 402.9L747.5 402.0L749.7 402.8L749.2 403.4ZM715.2 377.5L713.6 377.5L713.2 377.5L714.8 376.4L715.2 377.5ZM235.5 360.2L235.9 361.3L236.0 361.7L234.3 360.3L235.5 360.2ZM266.3 232.8L265.0 235.0L264.9 233.6L266.3 232.8ZM329.6 73.3L331.8 75.1L332.0 75.7L331.1 75.2L329.6 73.3ZM784.0 249.3L784.9 249.5L784.0 251.5L784.1 250.0L784.0 249.3ZM307.0 249.3L308.6 249.5L308.7 249.6L306.5 250.2L307.0 249.3ZM244.0 30.8L245.7 27.5L246.3 27.0L247.7 27.9L245.9 27.6L244.0 30.8ZM479.3 280.1L480.4 279.8L481.1 279.6L479.8 280.8L479.3 280.1ZM244.3 25.8L245.4 26.8L244.0 27.2L244.3 25.8ZM360.9 108.5L362.1 108.7L362.3 109.9L360.9 108.5Z"/>
+          <text class="mlbl mlbl-sea" x="220.0" y="278.2">MARE TYRRHENUM</text><text class="mlbl mlbl-sea" x="443.3" y="393.3">MARE IONIUM</text><text class="mlbl mlbl-sea" x="673.3" y="342.6">MARE AEGAEUM</text><text class="mlbl mlbl-sea" x="386.7" y="158.4">MARE ADRIATICUM</text><text class="mlbl mlbl-sea" x="550.0" y="556.5">MARE LIBYCUM</text><text class="mlbl mlbl-sea" x="80.0" y="216.7">MARE INTERNUM</text>
+          <text class="mlbl mlbl-land" x="263.3" y="131.1">ITALIA</text><text class="mlbl mlbl-land" x="280.0" y="370.2">SICILIA</text><text class="mlbl mlbl-land" x="663.3" y="477.9">CRETA</text><text class="mlbl mlbl-land" x="576.7" y="278.2">GRAECIA</text><text class="mlbl mlbl-land" x="840.0" y="325.6">ASIA</text><text class="mlbl mlbl-land" x="416.7" y="619.7">AFRICA</text><text class="mlbl mlbl-land" x="853.3" y="658.6">AEGYPTUS</text>
+          <g class="routes"><path class="leg" id="leg-l0" d="M708.0 275.5C706.4 273.0 701.3 266.2 698.3 260.7C695.3 255.2 692.4 246.5 690.0 242.3C687.6 238.1 685.0 236.8 684.0 235.7"/><path class="leg" id="leg-l1" d="M684.0 235.7C681.1 239.9 671.2 243.6 666.7 260.7C662.2 277.8 661.2 314.9 656.7 338.4C652.2 361.9 647.8 386.2 640.0 401.6C632.2 417.0 625.0 420.4 610.0 430.7C595.0 441.0 579.5 451.3 550.0 463.6C520.5 475.9 475.0 490.8 433.3 504.3C391.6 517.8 336.1 538.5 300.0 544.5C263.9 550.5 234.2 542.5 216.7 540.5C199.2 538.5 198.6 533.8 195.0 532.5"/><path class="leg" id="leg-l2" d="M195.0 532.5C200.3 527.8 212.0 519.2 226.7 504.3C241.4 489.4 263.3 459.5 283.3 443.1C303.3 426.7 335.3 414.8 346.7 405.8C358.1 396.8 353.0 393.7 351.7 389.1C350.4 384.5 340.9 380.0 338.7 378.2"/><path class="leg" id="leg-l3" d="M338.7 378.2C341.7 375.8 353.3 369.4 356.7 363.8C360.1 358.2 361.2 349.9 359.3 344.8C357.4 339.7 349.6 334.2 345.0 333.3C340.4 332.4 333.9 338.6 331.7 339.7"/><path class="leg" id="leg-l4" d="M331.7 339.7C326.4 334.5 313.6 321.6 300.0 308.4C286.4 295.2 269.4 275.2 250.0 260.7C230.6 246.1 199.4 229.5 183.3 221.1C167.2 212.7 160.7 211.4 153.3 210.0C145.9 208.6 141.1 212.2 138.7 212.7"/><path class="leg" id="leg-l5" d="M138.7 212.7C144.5 211.5 158.6 206.6 173.3 205.6C188.0 204.6 211.7 205.5 226.7 206.9C241.7 208.3 256.1 211.9 263.3 214.0C270.5 216.1 268.6 218.5 269.7 219.4"/><path class="leg" id="leg-l6" d="M269.7 219.4C272.0 221.9 277.1 230.1 283.3 234.4C289.5 238.7 301.5 242.8 306.7 245.4C311.9 248.0 313.0 249.1 314.3 249.8"/><path class="leg" id="leg-l7" d="M314.3 249.8C316.9 255.2 324.6 269.9 330.0 282.5C335.4 295.1 342.6 314.5 346.7 325.6C350.8 336.8 353.0 345.4 354.3 349.4"/><path class="leg" id="leg-l8" d="M354.3 349.4C354.1 354.6 355.1 370.6 353.3 380.7C351.5 390.8 348.9 406.4 343.3 410.0C337.8 413.6 325.1 405.1 320.0 402.5C314.9 399.9 313.9 395.8 312.7 394.5"/><path class="leg" id="leg-l9" d="M312.7 394.5C313.6 397.4 318.8 406.3 318.3 412.0C317.9 417.7 311.7 423.8 310.0 428.6C308.3 433.4 308.3 438.9 308.0 441.0"/><path class="leg" id="leg-l10" d="M308.0 441.0C317.8 437.2 343.0 429.1 366.7 418.3C390.4 407.6 430.6 391.9 450.0 376.5C469.4 361.1 475.4 340.0 483.3 325.6C491.2 311.2 495.0 296.2 497.3 290.3"/><path class="leg" id="leg-l11" d="M497.3 290.3C498.9 294.8 504.3 309.8 506.7 317.0C509.1 324.2 509.8 329.2 511.7 333.3C513.6 337.4 516.3 340.2 518.3 341.8C520.3 343.4 522.8 342.5 523.7 342.6"/><path class="leg leg-aiolos" id="leg-aiolos" d="M331.7 339.7C335.3 340.9 344.7 344.6 353.3 346.9C361.9 349.2 367.2 352.6 383.3 353.3C399.4 354.0 429.4 352.5 450.0 351.1C470.6 349.7 497.2 345.9 506.7 344.8"/><path class="leg leg-nekyia" id="leg-nekyia" d="M269.7 219.4C258.1 232.1 225.5 275.7 200.0 295.5C174.5 315.3 141.7 328.4 116.7 338.4C91.7 348.4 65.0 353.3 50.0 355.4C35.0 357.5 30.6 351.8 26.7 351.1"/><g class="tel-layer" id="telLayer"><path class="leg leg-tel" d="M523.7 342.6C524.8 346.9 526.7 359.7 530.0 368.1C533.3 376.6 538.8 387.1 543.3 393.3C547.8 399.5 554.5 403.4 556.7 405.4"/><path class="leg leg-tel leg-tel-land" d="M556.7 405.4C558.1 404.4 561.0 400.6 565.0 399.5C569.0 398.4 578.3 398.8 581.0 398.7"/></g></g>
+          <g class="markers"><g class="mk mk-hist" data-i="0" transform="translate(708.0 275.7)" tabindex="0" role="button" aria-label="Troja"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">0</text><text class="mk-lbl" x="12" y="-10">Troja</text></g><g class="mk mk-hist" data-i="1" transform="translate(684.0 235.7)" tabindex="0" role="button" aria-label="Ismaros - Kikonen"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">1</text><text class="mk-lbl" x="12" y="-10">Ismaros &middot; Kikonen</text></g><g class="mk mk-myth" data-i="2" transform="translate(195.0 532.5)" tabindex="0" role="button" aria-label="Land der Lotophagen"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">2</text><text class="mk-lbl" x="12" y="-10">Land der Lotophagen</text></g><g class="mk mk-myth" data-i="3" transform="translate(338.7 378.2)" tabindex="0" role="button" aria-label="Insel der Kyklopen"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">3</text><text class="mk-lbl" x="12" y="-10">Insel der Kyklopen</text></g><g class="mk mk-myth" data-i="4" transform="translate(331.7 339.7)" tabindex="0" role="button" aria-label="Aiolia"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">4</text><text class="mk-lbl" x="12" y="-10">Aiolia</text></g><g class="mk mk-myth" data-i="5" transform="translate(138.7 212.7)" tabindex="0" role="button" aria-label="Telepylos - Laistrygonen"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">5</text><text class="mk-lbl" x="12" y="-10">Telepylos &middot; Laistrygonen</text></g><g class="mk mk-myth" data-i="6" transform="translate(269.7 219.4)" tabindex="0" role="button" aria-label="Aiaia - Kirke"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">6</text><text class="mk-lbl" x="12" y="-10">Aiaia &middot; Kirke</text></g><g class="mk mk-edge" data-i="7" transform="translate(26.7 351.1)" tabindex="0" role="button" aria-label="Am Rand des Okeanos"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">7</text><text class="mk-lbl" x="12" y="-10">Am Rand des Okeanos</text></g><g class="mk mk-myth" data-i="8" transform="translate(314.3 249.8)" tabindex="0" role="button" aria-label="Die Sirenen"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">8</text><text class="mk-lbl" x="12" y="-10">Die Sirenen</text></g><g class="mk mk-myth" data-i="9" transform="translate(354.3 349.4)" tabindex="0" role="button" aria-label="Skylla &amp; Charybdis"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">9</text><text class="mk-lbl" x="12" y="-10">Skylla &amp; Charybdis</text></g><g class="mk mk-myth" data-i="10" transform="translate(312.7 394.5)" tabindex="0" role="button" aria-label="Thrinakia"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">10</text><text class="mk-lbl" x="12" y="-10">Thrinakia</text></g><g class="mk mk-myth" data-i="11" transform="translate(308.0 441.0)" tabindex="0" role="button" aria-label="Ogygia - Kalypso"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">11</text><text class="mk-lbl" x="12" y="-10">Ogygia &middot; Kalypso</text></g><g class="mk mk-myth" data-i="12" transform="translate(497.3 290.3)" tabindex="0" role="button" aria-label="Scheria - Ph&auml;aken"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">12</text><text class="mk-lbl" x="12" y="-10">Scheria &middot; Ph&auml;aken</text></g><g class="mk mk-hist" data-i="13" transform="translate(523.7 342.6)" tabindex="0" role="button" aria-label="Ithaka"><circle class="mk-halo" r="16"/><circle class="mk-dot" r="7.5"/><text class="mk-num" y="3.4">13</text><text class="mk-lbl" x="12" y="-10">Ithaka</text></g><g class="mk mk-tel" data-t="0" transform="translate(556.7 405.4)" tabindex="0" role="button" aria-label="Pylos - Nestor"><circle class="mk-halo" r="14"/><circle class="mk-dot" r="6"/><text class="mk-lbl" x="10" y="-8">Pylos &middot; Nestor</text></g><g class="mk mk-tel" data-t="1" transform="translate(581.0 398.7)" tabindex="0" role="button" aria-label="Sparta - Menelaos"><circle class="mk-halo" r="14"/><circle class="mk-dot" r="6"/><text class="mk-lbl" x="10" y="-8">Sparta &middot; Menelaos</text></g></g>
+          <g class="ship" id="mapShip">
+            <g transform="translate(-9 -7)">
+              <path class="ship-hull" d="M0 9 L18 9 L15.5 13.5 L2.5 13.5 Z"/>
+              <path class="ship-hull" d="M8.6 9 L8.6 0.5 L9.8 0.5 L9.8 9 Z"/>
+              <path class="ship-sail" d="M9.8 1.4 L16.4 6 L9.8 8 Z"/>
+              <path class="ship-sail" d="M8.6 1.4 L2.6 6 L8.6 8 Z"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+
+      <div class="map-panel" id="mapPanel" role="status" aria-live="polite">
+        <p class="phint">Tippe auf einen Punkt der Karte oder auf eine Station unten &ndash; oder lass die Reise abspielen.</p>
+        <div class="pbody">
+          <div class="pt"><h4 id="mpTitle"></h4><span class="pg" id="mpGesang"></span></div>
+          <div class="po" id="mpOrt"></div>
+          <p class="px" id="mpText"></p>
+          <button class="pjump" id="mpJump" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            Zur ausf&uuml;hrlichen Station
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-legend">
+      <span><i class="lg-hist"></i>arch&auml;ologisch fassbar</span>
+      <span><i class="lg-myth"></i>mythisch (trad. Verortung)</span>
+      <span><i class="lg-edge"></i>jenseits der Karte</span>
+      <span><i class="lg-tel"></i>Telemachie</span>
+      <span><i class="ln lg-route"></i>Kurs des Odysseus</span>
+      <span><i class="ln lg-wind"></i>Windschlauch-Umweg</span>
+    </div>
+  </div>
+
+  <div class="chips"><button class="chip chip-hist" data-i="0"><b>0</b>Troja</button><button class="chip chip-hist" data-i="1"><b>1</b>Ismaros &middot; Kikonen</button><button class="chip chip-myth" data-i="2"><b>2</b>Land der Lotophagen</button><button class="chip chip-myth" data-i="3"><b>3</b>Insel der Kyklopen</button><button class="chip chip-myth" data-i="4"><b>4</b>Aiolia</button><button class="chip chip-myth" data-i="5"><b>5</b>Telepylos &middot; Laistrygonen</button><button class="chip chip-myth" data-i="6"><b>6</b>Aiaia &middot; Kirke</button><button class="chip chip-edge" data-i="7"><b>7</b>Am Rand des Okeanos</button><button class="chip chip-myth" data-i="8"><b>8</b>Die Sirenen</button><button class="chip chip-myth" data-i="9"><b>9</b>Skylla &amp; Charybdis</button><button class="chip chip-myth" data-i="10"><b>10</b>Thrinakia</button><button class="chip chip-myth" data-i="11"><b>11</b>Ogygia &middot; Kalypso</button><button class="chip chip-myth" data-i="12"><b>12</b>Scheria &middot; Ph&auml;aken</button><button class="chip chip-hist" data-i="13"><b>13</b>Ithaka</button></div>
+
+  <p class="map-note"><b>Zur Redlichkeit:</b> Nur Troja, Ismaros, Ithaka, Pylos und Sparta sind reale Orte. Alle &uuml;brigen Punkte sind <em>Zuschreibungen</em>, gewachsen seit der Antike &ndash; Homer nennt keine Koordinaten. Schon Eratosthenes spottete, man werde den Weg des Odysseus finden, sobald man den Riemer entdeckt habe, der den Windschlauch n&auml;hte. Die Karte zeigt also nicht, wo Odysseus war, sondern <em>wohin ihn die Nachwelt gesetzt hat</em>. K&uuml;stenlinien: Natural Earth (gemeinfrei), Mercator-Projektion.</p>
+
+  <div class="voyage">
+    <details class="port"><summary><span class="medal">0</span><span class="pname"><span class="t">Troja</span><span class="s">Der Ausgangspunkt</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Mit zwölf Schiffen bricht Odysseus vom eroberten Troja auf. Der Krieg – durch die List des Hölzernen Pferdes entschieden – liegt hinter ihm; vor ihm liegen zehn Jahre Meer. (Vorgeschichte; sie wird in der Odyssee nur erinnert, nicht erzählt.)<span class="tag">Vorgeschichte</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">1</span><span class="pname"><span class="t">Ismaros · Kikonen</span><span class="s">Der erste Beutezug</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">In Thrakien plündern die Männer die Stadt der Kikonen, bleiben aus Übermut zu lange – die Kikonen kehren mit Verbündeten zurück und schlagen sie. Erste schwere Verluste. Die Lehre trifft sofort ein: Maßlosigkeit rächt sich.<span class="tag">Gesang 9</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">2</span><span class="pname"><span class="t">Land der Lotophagen</span><span class="s">Die Frucht des Vergessens</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Wer vom Lotos isst, verliert jede Sehnsucht nach der Heimat. Odysseus muss die Betäubten mit Gewalt an Bord zerren. Es ist die erste von vielen „Verlockungen des Bleibens" – die süße Versuchung, das Ziel einfach zu vergessen.<span class="tag">Gesang 9</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">3</span><span class="pname"><span class="t">Insel der Kyklopen</span><span class="s">Polyphem und „Niemand"</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Der einäugige Menschenfresser Polyphem, Sohn Poseidons, sperrt die Männer in seine Höhle. Odysseus macht ihn mit Wein trunken, nennt sich „Niemand" (<i>Outis</i>) und blendet ihn – so ruft der Riese vergeblich um Hilfe. Doch der Übermut, beim Abfahren den wahren Namen zu rufen, zieht Poseidons Fluch nach sich: die Wurzel aller weiteren Irrfahrt. Sieg des Geistes über die Kraft – mit hohem Preis.<span class="tag">Gesang 9</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">4</span><span class="pname"><span class="t">Aiolia</span><span class="s">Der Windschlauch</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Aiolos, Herr der Winde, schenkt Odysseus alle widrigen Winde in einem Schlauch; nur der günstige treibt ihn heimwärts. In Sichtweite Ithakas öffnen die neugierigen Gefährten den Schlauch – der Sturm bläst alle zurück. Ein Bild wie geschaffen: einen Klick vom Ziel entfernt drückt die Mannschaft den falschen Knopf.<span class="tag">Gesang 10</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">5</span><span class="pname"><span class="t">Telepylos · Laistrygonen</span><span class="s">Die Riesen aus Fels</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Die menschenfressenden Laistrygonen zerschmettern elf der zwölf Schiffe mit Felsbrocken. Nur das Schiff des Odysseus entkommt – der schwerste Verlust der ganzen Reise.<span class="tag">Gesang 10</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">6</span><span class="pname"><span class="t">Aiaia</span><span class="s">Kirke, die Zauberin</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Die Göttin Kirke verwandelt die Gefährten in Schweine. Mit dem Kraut <i>Moly</i> (von Hermes) gefeit, widersteht Odysseus dem Zauber, wird ihr Geliebter und bleibt ein Jahr. Sie weist ihm den Weg in die Unterwelt. (Der junge Elpenor stürzt betrunken vom Dach und stirbt.)<span class="tag">Gesang 10</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">7</span><span class="pname"><span class="t">Am Rand des Okeanos</span><span class="s">Nekyia – die Totenbeschwörung</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Am Weltensaum, im Land der Kimmerier, beschwört Odysseus die Seelen der Toten. Der blinde Seher Teiresias prophezeit Heimkehr – und eine rätselhafte letzte Reise mit dem Ruder. Er spricht mit seiner Mutter Antikleia, mit Agamemnon, Achilleus und dem schweigend grollenden Aias. Das dunkle Herz des Epos, ein Grenzgang zwischen Leben und Tod.<span class="tag">Gesang 11</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">8</span><span class="pname"><span class="t">Die Sirenen</span><span class="s">Der tödliche Gesang</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Ihr Lied verspricht Allwissen und lockt Seefahrer in den Tod. Odysseus lässt der Mannschaft die Ohren mit Wachs verschließen und sich selbst an den Mast binden – um zu hören und doch zu überleben: Wissen unter streng kontrolliertem Risiko.<span class="tag">Gesang 12</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">9</span><span class="pname"><span class="t">Skylla &amp; Charybdis</span><span class="s">Zwischen Ungeheuer und Strudel</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Die enge Meeresstraße wird von der sechsköpfigen Skylla und dem Schlund der Charybdis bewacht. Odysseus wählt das kleinere Übel – Skylla frisst sechs Männer. Bis heute sprichwörtlich für die Wahl zwischen zwei Gefahren.<span class="tag">Gesang 12</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">10</span><span class="pname"><span class="t">Thrinakia</span><span class="s">Die Rinder der Sonne</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Trotz aller Warnung schlachten die ausgehungerten Gefährten die heiligen Rinder des Sonnengottes Helios. Zeus zerschmettert das Schiff mit dem Blitz; alle ertrinken. Nur Odysseus überlebt, treibend auf einem Wrackbalken. Der Frevel kostet die Gefährten endgültig die Heimkehr.<span class="tag">Gesang 12</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">11</span><span class="pname"><span class="t">Ogygia</span><span class="s">Kalypso – sieben Jahre</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Die Nymphe Kalypso hält Odysseus sieben Jahre auf ihrer Insel und bietet ihm Unsterblichkeit – er aber sehnt sich nach Penelope und dem sterblichen Leben. Erst Zeus' Befehl (durch Hermes) erzwingt die Freilassung. <b>Hier setzt die Handlung der Odyssee ein</b> (Gesänge 1 &amp; 5): die Wahl der Heimat gegen ewiges, aber heimatloses Leben.<span class="tag">Gesänge 1 &amp; 5</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">12</span><span class="pname"><span class="t">Scheria</span><span class="s">Das Land der Phäaken</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Nach dem Schiffbruch findet ihn die Königstochter Nausikaa am Strand. Am Hof des Alkinoos erzählt Odysseus seine Irrfahrten (die <i>Apologoi</i>). Die seefahrenden Phäaken bringen ihn schließlich heim – die Schwelle zurück in die Menschenwelt.<span class="tag">Gesänge 6–13</span></div>
+    </details>
+    <details class="port"><summary><span class="medal">13</span><span class="pname"><span class="t">Ithaka</span><span class="s">Heimkehr und Rache</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></summary>
+      <div class="port-body">Als Bettler verkleidet kehrt Odysseus heim, findet sein Haus von Freiern besetzt, gibt sich den Getreuen zu erkennen, gewinnt den Bogenwettkampf und vollzieht die Rache. Die Wiedererkennung mit Penelope (das unbewegliche Ehebett) und die Aussöhnung mit dem Vater beschließen das zwanzigjährige Ringen.<span class="tag">Gesänge 13–24</span></div>
+    </details>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ HANDLUNG ============================ -->
+<section id="handlung" class="block reveal">
+  <div class="kicker"><span class="n">03</span><span class="label">Ablauf</span></div>
+  <h2 class="h">Handlung: alle 24 Gesänge</h2>
+  <p class="lead">Vier große Teile – die Erzählung selbst springt zwischen ihnen und in der Zeit. Hier stehen sie in Buchreihenfolge.</p>
+
+  <div class="part">
+    <div class="ph"><div class="pk">Teil I · Gesänge 1–4</div><h3>Die Telemachie</h3><p class="pi">Während der Vater fehlt, wird der Sohn erwachsen. Athene stößt Telemachos an, gegen die Freier aufzutreten und nach Odysseus zu suchen.</p></div>
+    <div class="cantos">
+      <div class="canto"><span class="cn">I</span><span class="cx"><b>Götterrat.</b> Athene besucht Telemachos in Ithaka (in Gestalt des Mentes) und ermutigt ihn, sich den Freiern zu widersetzen und Kunde vom Vater zu suchen.</span></div>
+      <div class="canto"><span class="cn">II</span><span class="cx"><b>Volksversammlung.</b> Telemachos klagt die Freier an; ein Adlerzeichen; heimlich sticht er mit Athenes Hilfe (als Mentor) in See.</span></div>
+      <div class="canto"><span class="cn">III</span><span class="cx"><b>Bei Nestor in Pylos.</b> Der greise König erinnert Troja und die Heimkehr Agamemnons.</span></div>
+      <div class="canto"><span class="cn">IV</span><span class="cx"><b>Bei Menelaos und Helena in Sparta.</b> Kunde, dass Odysseus bei Kalypso festgehalten wird. Die Freier legen einen Hinterhalt.</span></div>
+    </div>
+  </div>
+
+  <div class="part">
+    <div class="ph"><div class="pk">Teil II · Gesänge 5–8</div><h3>Kalypso und die Phäaken</h3><p class="pi">Odysseus tritt zum ersten Mal selbst auf: befreit von der Nymphe, schiffbrüchig, gastlich empfangen im Wunderland der Phäaken.</p></div>
+    <div class="cantos">
+      <div class="canto"><span class="cn">V</span><span class="cx"><b>Freilassung &amp; Sturm.</b> Hermes befiehlt Kalypso, Odysseus ziehen zu lassen. Floßbau; Poseidons Sturm; Inos Schleier rettet ihn nach Scheria.</span></div>
+      <div class="canto"><span class="cn">VI</span><span class="cx"><b>Nausikaa.</b> Die Königstochter findet den Schiffbrüchigen beim Wäschewaschen und weist ihm den Weg zur Stadt.</span></div>
+      <div class="canto"><span class="cn">VII</span><span class="cx"><b>Im Palast.</b> Aufnahme bei König Alkinoos und Königin Arete.</span></div>
+      <div class="canto"><span class="cn">VIII</span><span class="cx"><b>Das Fest.</b> Der blinde Sänger Demodokos singt von Troja – Odysseus weint und wird gebeten, seine Geschichte zu erzählen.</span></div>
+    </div>
+  </div>
+
+  <div class="part">
+    <div class="ph"><div class="pk">Teil III · Gesänge 9–12</div><h3>Die Irrfahrten (Apologoi)</h3><p class="pi">Odysseus erzählt selbst – als Ich-Rückblende – die berühmten Abenteuer der zurückliegenden Jahre.</p></div>
+    <div class="cantos">
+      <div class="canto"><span class="cn">IX</span><span class="cx"><b>Kikonen, Lotophagen, Polyphem.</b> Beutezug, Frucht des Vergessens, Blendung des Kyklopen und Poseidons Fluch.</span></div>
+      <div class="canto"><span class="cn">X</span><span class="cx"><b>Aiolos, Laistrygonen, Kirke.</b> Der Windschlauch; Verlust von elf Schiffen; die Zauberin auf Aiaia.</span></div>
+      <div class="canto"><span class="cn">XI</span><span class="cx"><b>Nekyia.</b> Die Totenbeschwörung; Teiresias' Prophezeiung; Begegnungen mit Antikleia, Agamemnon, Achilleus, Aias.</span></div>
+      <div class="canto"><span class="cn">XII</span><span class="cx"><b>Sirenen, Skylla, Helios.</b> Der tödliche Gesang; die Enge; der Frevel an den Sonnenrindern und der Untergang des letzten Schiffs.</span></div>
+    </div>
+  </div>
+
+  <div class="part">
+    <div class="ph"><div class="pk">Teil IV · Gesänge 13–24</div><h3>Heimkehr und Rache</h3><p class="pi">Verkleidet, geduldig, planvoll: die Rückgewinnung von Haus, Recht und Ehe – und die Aussöhnung am Schluss.</p></div>
+    <div class="cantos">
+      <div class="canto"><span class="cn">XIII</span><span class="cx"><b>Ankunft.</b> Die Phäaken setzen den Schlafenden in Ithaka ab; Athene verwandelt ihn in einen Bettler.</span></div>
+      <div class="canto"><span class="cn">XIV</span><span class="cx"><b>Beim Sauhirten.</b> Der treue Eumaios nimmt den Unerkannten gastlich auf – Vorbild rechter Gastfreundschaft.</span></div>
+      <div class="canto"><span class="cn">XV</span><span class="cx"><b>Rückkehr des Sohnes.</b> Telemachos entgeht dem Hinterhalt; der Seher Theoklymenos schließt sich an.</span></div>
+      <div class="canto"><span class="cn">XVI</span><span class="cx"><b>Wiedererkennung.</b> Vater und Sohn erkennen einander und schmieden den Racheplan.</span></div>
+      <div class="canto"><span class="cn">XVII</span><span class="cx"><b>Im eigenen Palast.</b> Als Bettler verhöhnt; der alte Hund Argos erkennt ihn, wedelt und stirbt.</span></div>
+      <div class="canto"><span class="cn">XVIII</span><span class="cx"><b>Der Bettlerkampf.</b> Odysseus schlägt den Prahler Iros; Penelope tritt vor die Freier.</span></div>
+      <div class="canto"><span class="cn">XIX</span><span class="cx"><b>Die Narbe.</b> Nächtliches Gespräch mit Penelope (unerkannt); die Amme Eurykleia erkennt ihn an der Narbe am Bein.</span></div>
+      <div class="canto"><span class="cn">XX</span><span class="cx"><b>Die Nacht davor.</b> Böse Vorzeichen und wachsende Spannung vor der Entscheidung.</span></div>
+      <div class="canto"><span class="cn">XXI</span><span class="cx"><b>Der Bogen.</b> Nur Odysseus spannt den Bogen und schießt durch die zwölf Äxte.</span></div>
+      <div class="canto"><span class="cn">XXII</span><span class="cx"><b>Der Freiermord.</b> Die Rache im Saal; Bestrafung der treulosen Mägde und des Melanthios.</span></div>
+      <div class="canto"><span class="cn">XXIII</span><span class="cx"><b>Das Ehebett.</b> Penelopes letzte Prüfung: Das Geheimnis des unbeweglichen Betts überführt den echten Gatten.</span></div>
+      <div class="canto"><span class="cn">XXIV</span><span class="cx"><b>Aussöhnung.</b> Die Seelen der Freier in der Unterwelt; Odysseus und der greise Laertes; Athene stiftet Frieden mit den Familien der Erschlagenen.</span></div>
+    </div>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ PERSONEN ============================ -->
+<section id="personen" class="block reveal">
+  <div class="kicker"><span class="n">04</span><span class="label">Wer handelt</span></div>
+  <h2 class="h">Personen</h2>
+  <p class="lead">Sterbliche, Götter und die Wesen der Irrfahrt – die wichtigsten Figuren mit griechischem Namen und Kennzeichen.</p>
+
+  <div class="group-label"><span class="l">Odysseus &amp; sein Haus</span><span class="rule"></span></div>
+  <div class="grid">
+    <div class="card"><h4>Odysseus <span class="gr">Ὀδυσσεύς</span></h4><span class="who">Held · König von Ithaka</span><p>„Der Listenreiche", „der Dulder", <i>polytropos</i> (vielgewandt). Ein Geist wie ein Schweizer Taschenmesser: für jede Lage das passende Werkzeug. Siegt durch List statt durch Kraft.</p></div>
+    <div class="card"><h4>Penelope <span class="gr">Πηνελόπη</span></h4><span class="who">Seine Gattin</span><p>Inbegriff der Treue – und selbst voller List. Sie webt und trennt jahrelang das Leichentuch für Laertes, um die Freier hinzuhalten, und prüft den Heimkehrer mit dem Geheimnis des Ehebetts.</p></div>
+    <div class="card"><h4>Telemachos <span class="gr">Τηλέμαχος</span></h4><span class="who">Der Sohn</span><p>Wird in der „Telemachie" vom unsicheren Jüngling zum handelnden Mann. Sucht den Vater, steht ihm später im Kampf bei.</p></div>
+    <div class="card"><h4>Laertes <span class="gr">Λαέρτης</span></h4><span class="who">Der Vater</span><p>Der greise, zurückgezogen lebende Vater. Aussöhnung im Schlussgesang, als Odysseus sich ihm im Garten zu erkennen gibt.</p></div>
+    <div class="card"><h4>Antikleia <span class="gr">Ἀντίκλεια</span></h4><span class="who">Die Mutter</span><p>Aus Gram über den fernen Sohn gestorben. Odysseus begegnet ihrem Schatten in der Unterwelt und kann sie doch nicht umarmen.</p></div>
+    <div class="card"><h4>Eurykleia <span class="gr">Εὐρύκλεια</span></h4><span class="who">Die alte Amme</span><p>Erkennt den Verkleideten beim Fußwaschen an der alten Narbe am Bein – die berühmteste Wiedererkennung des Epos.</p></div>
+    <div class="card"><h4>Eumaios <span class="gr">Εὔμαιος</span></h4><span class="who">Der treue Sauhirt</span><p>Nimmt den Bettler gastlich auf, ohne ihn zu kennen – das leuchtende Vorbild rechter Gastfreundschaft (Xenia).</p></div>
+    <div class="card"><h4>Philoitios <span class="gr">Φιλοίτιος</span></h4><span class="who">Der treue Rinderhirt</span><p>Bleibt dem Herrn ergeben und steht ihm beim Freiermord zur Seite.</p></div>
+    <div class="card"><h4>Argos <span class="gr">Ἄργος</span></h4><span class="who">Der alte Hund</span><p>Erkennt seinen Herrn nach zwanzig Jahren, wedelt ein letztes Mal – und stirbt. Eine der ergreifendsten Szenen der Antike.</p></div>
+    <div class="card"><h4>Mentor <span class="gr">Μέντωρ</span></h4><span class="who">Freund des Odysseus</span><p>Athene nimmt seine Gestalt an, um Telemachos zu leiten. Von ihm stammt unser Wort „Mentor".</p></div>
+  </div>
+
+  <div class="group-label"><span class="l">Die Freier &amp; die Treulosen</span><span class="rule"></span></div>
+  <div class="grid">
+    <div class="card"><h4>Antinoos <span class="gr">Ἀντίνοος</span></h4><span class="who">Anführer der Freier</span><p>Der frechste und gewalttätigste; wirft nach dem Bettler und fällt beim Freiermord als Erster.</p></div>
+    <div class="card"><h4>Eurymachos <span class="gr">Εὐρύμαχος</span></h4><span class="who">Wortführer</span><p>Der glatte, berechnende Redner; versucht sich noch im letzten Moment herauszureden.</p></div>
+    <div class="card"><h4>Amphinomos <span class="gr">Ἀμφίνομος</span></h4><span class="who">Der „beste" Freier</span><p>Der anständigste unter ihnen. Odysseus warnt ihn vergeblich vor dem kommenden Verhängnis.</p></div>
+    <div class="card"><h4>Melanthios <span class="gr">Μελάνθιος</span></h4><span class="who">Treuloser Ziegenhirt</span><p>Verhöhnt und verrät den Herrn, versorgt die Freier mit Waffen – und wird grausam bestraft.</p></div>
+    <div class="card"><h4>Melantho <span class="gr">Μελανθώ</span></h4><span class="who">Treulose Magd</span><p>Verspottet den Bettler und hält es mit den Freiern; sie gehört zu den Mägden, die am Ende gehängt werden.</p></div>
+  </div>
+
+  <div class="group-label"><span class="l">Götter &amp; höhere Mächte</span><span class="rule"></span></div>
+  <div class="grid">
+    <div class="card"><h4>Athene <span class="gr">Ἀθηνᾶ</span></h4><span class="who">Göttin der Klugheit</span><p>Schutzherrin von Odysseus und Telemachos. Lenkt in vielerlei Gestalt (Mentes, Mentor) – die treibende göttliche Kraft der Heimkehr.</p></div>
+    <div class="card"><h4>Poseidon <span class="gr">Ποσειδῶν</span></h4><span class="who">Meergott · Gegenspieler</span><p>Grollt wegen der Blendung seines Sohnes Polyphem und türmt dem Heimkehrer Sturm um Sturm auf.</p></div>
+    <div class="card"><h4>Zeus <span class="gr">Ζεύς</span></h4><span class="who">Höchster Gott</span><p>Wägt Recht und Schicksal. Sein Befehl gibt Odysseus schließlich frei; er betont im Prolog die Eigenverantwortung der Menschen.</p></div>
+    <div class="card"><h4>Hermes <span class="gr">Ἑρμῆς</span></h4><span class="who">Götterbote</span><p>Übergibt das rettende Kraut Moly und überbringt Kalypso den Freilassungsbefehl.</p></div>
+    <div class="card"><h4>Helios <span class="gr">Ἥλιος</span></h4><span class="who">Sonnengott</span><p>Seine heiligen Rinder auf Thrinakia werden den Gefährten zum Verhängnis.</p></div>
+    <div class="card"><h4>Ino / Leukothea <span class="gr">Ἰνώ</span></h4><span class="who">Meergöttin</span><p>Rettet den Schiffbrüchigen im Sturm mit ihrem Schleier (<i>kredemnon</i>).</p></div>
+  </div>
+
+  <div class="group-label"><span class="l">Begegnungen der Irrfahrt</span><span class="rule"></span></div>
+  <div class="grid">
+    <div class="card"><h4>Polyphem <span class="gr">Πολύφημος</span></h4><span class="who">Der Kyklop</span><p>Einäugiger Menschenfresser, Sohn Poseidons. Von „Niemand" mit Wein und Pfahl überlistet und geblendet.</p></div>
+    <div class="card"><h4>Kirke <span class="gr">Κίρκη</span></h4><span class="who">Zauberin auf Aiaia</span><p>Verwandelt Männer in Schweine, wird dann Odysseus' Gefährtin und Wegweiserin zur Unterwelt.</p></div>
+    <div class="card"><h4>Kalypso <span class="gr">Καλυψώ</span></h4><span class="who">Nymphe auf Ogygia</span><p>Hält Odysseus sieben Jahre fest und bietet Unsterblichkeit – die verlockendste aller Fesseln.</p></div>
+    <div class="card"><h4>Teiresias <span class="gr">Τειρεσίας</span></h4><span class="who">Der blinde Seher</span><p>Prophezeit in der Unterwelt Heimkehr, Warnung vor den Sonnenrindern und eine geheimnisvolle letzte Reise.</p></div>
+    <div class="card"><h4>Aiolos <span class="gr">Αἴολος</span></h4><span class="who">Herr der Winde</span><p>Schenkt Odysseus den Windschlauch, der ihn fast heimbringt – bis die Gefährten ihn öffnen.</p></div>
+    <div class="card"><h4>Elpenor <span class="gr">Ἐλπήνωρ</span></h4><span class="who">Jüngster Gefährte</span><p>Stürzt bei Kirke betrunken vom Dach; als erster Schatten in der Unterwelt bittet er um Bestattung.</p></div>
+    <div class="card"><h4>Sirenen <span class="gr">Σειρῆνες</span></h4><span class="who">Singende Verführerinnen</span><p>Ihr Lied verspricht Allwissen und lockt in den Tod – bei Homer noch keine Nixen, sondern eher Vogelwesen.</p></div>
+    <div class="card"><h4>Skylla &amp; Charybdis <span class="gr">Σκύλλα</span></h4><span class="who">Ungeheuer der Enge</span><p>Sechsköpfiges Monster und alles verschlingender Strudel in der schmalen Meeresstraße.</p></div>
+  </div>
+
+  <div class="group-label"><span class="l">Phäaken &amp; die Heimkehrer von Troja</span><span class="rule"></span></div>
+  <div class="grid">
+    <div class="card"><h4>Nausikaa <span class="gr">Ναυσικάα</span></h4><span class="who">Königstochter der Phäaken</span><p>Findet den nackten Schiffbrüchigen am Strand und führt ihn – anmutig und klug – zur Stadt ihres Vaters.</p></div>
+    <div class="card"><h4>Alkinoos &amp; Arete <span class="gr">Ἀλκίνοος</span></h4><span class="who">Königspaar von Scheria</span><p>Gastgeber des Odysseus; ihre seefahrenden Phäaken bringen ihn zuletzt heim.</p></div>
+    <div class="card"><h4>Demodokos <span class="gr">Δημόδοκος</span></h4><span class="who">Blinder Sänger</span><p>Singt am Hof von Troja und vom Hölzernen Pferd; sein Lied treibt Odysseus die Tränen in die Augen – ein Selbstbildnis des Dichters.</p></div>
+    <div class="card"><h4>Nestor <span class="gr">Νέστωρ</span></h4><span class="who">König von Pylos</span><p>Der weise Alte; Gastgeber des Telemachos, lebendiges Gedächtnis des Krieges.</p></div>
+    <div class="card"><h4>Menelaos &amp; Helena <span class="gr">Μενέλαος</span></h4><span class="who">Königspaar von Sparta</span><p>Berichten Telemachos von Troja und vom Verbleib des Vaters; Helena, einst Anlass des Krieges, ist heimgekehrt.</p></div>
+    <div class="card"><h4>Agamemnon <span class="gr">Ἀγαμέμνων</span></h4><span class="who">Schatten in der Unterwelt</span><p>Bei der Heimkehr von Frau und deren Liebhaber ermordet – das dunkle Gegenbild zu Odysseus' geglücktem Nostos.</p></div>
+    <div class="card"><h4>Achilleus <span class="gr">Ἀχιλλεύς</span></h4><span class="who">Schatten in der Unterwelt</span><p>Sagt, er wäre lieber Tagelöhner unter Lebenden als König über alle Toten – ein bitteres Wort über Ruhm und Tod.</p></div>
+    <div class="card"><h4>Aias / Ajax <span class="gr">Αἴας</span></h4><span class="who">Schatten in der Unterwelt</span><p>Grollt noch im Tod wegen des Streits um die Waffen Achills und wendet sich schweigend ab – erhabene Stummheit.</p></div>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ ORTE ============================ -->
+<section id="orte" class="block reveal">
+  <div class="kicker"><span class="n">05</span><span class="label">Wo es spielt</span></div>
+  <h2 class="h">Orte: historisch &amp; mythisch</h2>
+  <p class="lead">Manche Schauplätze sind archäologisch fassbar, andere sind Märchenländer – seit der Antike aber immer wieder auf der Landkarte gesucht.</p>
+
+  <div class="split">
+    <div class="col">
+      <div class="col-head"><span class="dot hist"></span><h3>Historisch fassbar</h3></div>
+      <div class="place"><h4>Ithaka <span class="gr">Ἰθάκη</span></h4><span class="loc">Ionische Inseln, Griechenland</span><p>Odysseus' Heimatinsel. Die Gleichsetzung mit dem heutigen Ithaki ist nicht unumstritten; eine viel diskutierte These (Robert Bittlestone, „Odysseus Unbound", 2005) verortet das homerische Ithaka auf der Halbinsel Paliki von Kephalonia.</p></div>
+      <div class="place"><h4>Troja / Ilios <span class="gr">Τροία</span></h4><span class="loc">Hisarlık, Türkei</span><p>Ausgangspunkt der Reise. Seit Heinrich Schliemanns Grabungen (1870er) mit dem Hügel Hisarlık identifiziert; die bronzezeitlichen Schichten Troja VI/VIIa (um 1200 v. Chr.) gelten als Kandidaten für das „homerische" Troja.</p></div>
+      <div class="place"><h4>Pylos <span class="gr">Πύλος</span></h4><span class="loc">Messenien, Griechenland</span><p>Nestors Reich, Station der Telemachie. Der „Palast des Nestor" wurde ausgegraben (Carl Blegen); die dort gefundenen Linear-B-Tafeln belegen die mykenische Palastverwaltung.</p></div>
+      <div class="place"><h4>Sparta <span class="gr">Σπάρτη</span></h4><span class="loc">Lakonien, Griechenland</span><p>Hof des Menelaos und der Helena, wo Telemachos nach dem Vater fragt – ein bedeutendes mykenisches Zentrum.</p></div>
+    </div>
+
+    <div class="col">
+      <div class="col-head"><span class="dot myth"></span><h3>Mythisch <span class="muted" style="font-weight:400;font-size:0.8em;">(mit Verortungsversuchen)</span></h3></div>
+      <div class="place"><h4>Ogygia — Kalypso</h4><span class="loc">u. a. Gozo (Malta) · der ferne Westen</span><p>Die Insel im „Nabel des Meeres". Antike wie neuzeitliche Deutungen siedeln sie im westlichen Mittelmeer oder gar jenseits an.</p></div>
+      <div class="place"><h4>Scheria — die Phäaken</h4><span class="loc">oft Korfu / Kerkyra</span><p>Das seefahrende Wunderland wird traditionell mit Korfu gleichgesetzt.</p></div>
+      <div class="place"><h4>Aiaia — Kirke</h4><span class="loc">Monte Circeo, Latium</span><p>Das Vorgebirge südlich Roms trägt bis heute Kirkes Namen.</p></div>
+      <div class="place"><h4>Insel der Kyklopen</h4><span class="loc">oft Sizilien, bei Ätna</span><p>Die Faraglioni-Felsen bei Aci Trezza gelten volkstümlich als die Steine, die der geblendete Polyphem dem fliehenden Schiff nachschleuderte.</p></div>
+      <div class="place"><h4>Aiolia — Aiolos</h4><span class="loc">Liparische (Äolische) Inseln</span><p>Die schwimmende Windinsel; ihr Name lebt in den Äolischen Inseln nördlich Siziliens fort.</p></div>
+      <div class="place"><h4>Skylla &amp; Charybdis</h4><span class="loc">Straße von Messina</span><p>Die klassische reale Zuordnung: die schmale, gefährliche Meerenge zwischen Kalabrien und Sizilien.</p></div>
+      <div class="place"><h4>Thrinakia — Helios' Rinder</h4><span class="loc">oft Sizilien (Trinakria)</span><p>Der Name klingt an <i>Trinakria</i> an, den antiken Namen des dreieckigen Sizilien.</p></div>
+      <div class="place"><h4>Eingang zur Unterwelt</h4><span class="loc">Rand des Okeanos · Kap Tainaron · Avernersee</span><p>Am Weltensaum, im Land der Kimmerier. Später wurden auch reale „Höllenpforten" wie Kap Tainaron (Mani) oder der Avernersee bei Cumae genannt.</p></div>
+    </div>
+  </div>
+
+  <div class="prose" style="margin-top:34px;">
+    <h3 class="sub">Der Streit um die Landkarte</h3>
+    <p>Schon in der Antike stritten die Gelehrten, ob man die Irrfahrt real verorten könne. Der Geograph Eratosthenes spottete, man werde den Weg des Odysseus finden, sobald man den Riemer entdeckt habe, der den Windschlauch nähte – für ihn reine Dichtung. Strabon dagegen verteidigte einen geografischen Kern. Der heutige Konsens liegt dazwischen: Der Dichter verwob echte Gefahren der Seefahrt – Strudel, Klippen, fremde Küsten – mit Märchen- und Fabelstoffen zu einer eigenen Welt.</p>
+    <p>Wie die Nachwelt trotzdem entschieden hat, findest du in der <a href="#karte">interaktiven Karte</a> weiter oben – jeder mythische Punkt dort ist eine solche Zuschreibung, keine Ortsangabe Homers.</p>
+    <p>Die mythischen Orte auf einer heutigen Karte zu suchen, gleicht dem Versuch, Mittelerde auf einer Straßenkarte Englands zu finden: Man erkennt reale Landschaftszüge wieder, doch verklärt zu Sagengeografie. Genau diese Schwebe zwischen Erfahrung und Erfindung macht den Reiz der Odyssee-Geografie aus.</p>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ HINTERGRUND ============================ -->
+<section id="hintergrund" class="block reveal">
+  <div class="kicker"><span class="n">06</span><span class="label">Woher es kommt</span></div>
+  <h2 class="h">Historischer &amp; mythischer Hintergrund</h2>
+  <div class="prose">
+    <p class="lead">Ein Text aus dem 8. Jahrhundert, der eine 400 Jahre ältere Bronzewelt erinnert – überliefert nicht aus einem Buch, sondern aus dem Gesang.</p>
+
+    <h3 class="sub">Homer und die „Homerische Frage"</h3>
+    <p>„Homer" ist ein Name, über dessen Träger wir fast nichts wissen; das Wort bedeutet vielleicht „Geisel, Bürge". Mehrere ionische Städte an der kleinasiatischen Küste (Chios, Smyrna) beanspruchten ihn. Schon in der Antike fragte man, ob ein einziger Dichter Ilias <em>und</em> Odyssee schuf – die „Chorizontes" (Trenner) bestritten es. Seit Friedrich August Wolfs „Prolegomena ad Homerum" (1795) diskutiert die Forschung zwischen „Analytikern" (das Epos als Naht mehrerer Schichten) und „Unitariern" (ein durchkomponiertes Ganzes). Die Odyssee gilt sprachlich als jünger als die Ilias – möglicherweise das Werk eines anderen Sängers derselben Tradition.</p>
+
+    <h3 class="sub">Mündliche Dichtung: Bausteine statt Buch</h3>
+    <p>Die Epen entstanden in einer Kultur des mündlichen Vortrags. Milman Parry und Albert Lord zeigten am lebenden Beispiel südslawischer Sänger, wie ein solcher Text funktioniert: aus festen <b>Formeln</b> („der listenreiche Odysseus", „die rosenfingrige Morgenröte"), stehenden Versgruppen und typischen Szenen (Ankunft, Gastmahl, Rüstung). Man kann es sich wie ein Baukastensystem vorstellen – vorgefertigte Module, die der Sänger live zum Versmaß zusammenfügt, ähnlich wiederverwendbaren Bauteilen. Das Epos zeigt diese Praxis sogar selbst: In den Sängern Phemios und Demodokos porträtiert sich die Dichtung im Werk.</p>
+
+    <h3 class="sub">Ein Amalgam der Zeiten</h3>
+    <p>Die erzählte Welt erinnert die späte Bronzezeit – mykenische Paläste, Bronzewaffen, Streitwagen –, mischt aber Elemente der „Dunklen Jahrhunderte" und der Gegenwart des Dichters bei. Das Ergebnis ist ein anachronistisches Amalgam: keine getreue Momentaufnahme einer Epoche, sondern eine dichterische Legierung aus Erinnerung, Sage und Zeitkolorit.</p>
+
+    <h3 class="sub">Verschriftlichung &amp; Kanon</h3>
+    <p>Mündlich tradiert, wurde der Text in archaischer Zeit verschriftlicht und im hellenistischen Alexandria von Gelehrten wie Zenodot und Aristarch standardisiert. Von dort stammt auch die Einteilung in <b>24 Bücher</b> – nach den 24 Buchstaben des griechischen Alphabets.</p>
+
+    <h3 class="sub">Troja, Schliemann und die Historizität</h3>
+    <p>Schliemanns Grabung in Hisarlık machte Troja greifbar; als Kandidaten für die homerische Stadt gelten Troja VI (durch Erdbeben zerstört) und Troja VIIa (Brandzerstörung um 1180 v. Chr.). Hethitische Texte erwähnen ein „Wilusa" (sprachlich zu „(W)ilios") und ein Volk „Ahhijawa" (vielleicht die Achaier) – mögliche historische Berührungspunkte, aber kein Beweis für „den" Trojanischen Krieg. Odysseus selbst ist eine literarisch-mythische Gestalt; einen historischen Kern kann niemand belegen.</p>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ STRUKTUR ============================ -->
+<section id="struktur" class="block reveal">
+  <div class="kicker"><span class="n">07</span><span class="label">Wie es erzählt ist</span></div>
+  <h2 class="h">Erzählstruktur &amp; Technik</h2>
+  <div class="prose">
+    <p class="lead">Die Odyssee ist nicht nur eine Geschichte, sondern eine kunstvolle Erzählmaschine – doppelt geführt, in der Zeit gefaltet, virtuos gebaut.</p>
+
+    <h3 class="sub">In medias res und die Rückblende</h3>
+    <p>Das Epos beginnt mitten im Geschehen, im zehnten Jahr. Die Vorgeschichte – Troja und die berühmten Abenteuer – wird nachgereicht: als <em>Apologoi</em>, die Odysseus am Phäakenhof selbst erzählt. Das ist eine erstaunlich moderne Technik: eine Erzählung, die beim Ende einsetzt und dann zurückblendet (man denke an Filme wie „Memento"). Sie erzeugt Spannung nicht durch das <em>Was</em>, sondern durch das <em>Wie</em> und <em>Wann</em> des Erfahrens.</p>
+
+    <h3 class="sub">Der Held als sein eigener Erzähler</h3>
+    <p>In den Gesängen 9–12 spricht Odysseus in der Ich-Form. Der Meister der List berichtet über sich selbst – ein charmanter, potenziell unzuverlässiger Erzähler, der zugleich Figur und Sänger ist. Die Grenze zwischen dem dichtenden Homer und dem erzählenden Odysseus wird durchlässig.</p>
+
+    <h3 class="sub">Doppelhandlung und Ringkomposition</h3>
+    <p>Zwei Stränge laufen parallel: die Reifung des Telemachos und die Heimkehr des Odysseus; sie treffen im 16. Gesang zusammen. Über das Ganze legt sich eine Ringkomposition – Motive, Prophezeiungen und Szenen kehren gespiegelt wieder, so dass das Werk in sich zurückschwingt.</p>
+
+    <h3 class="sub">Auerbach: „Die Narbe des Odysseus"</h3>
+    <p>Erich Auerbach eröffnete sein berühmtes Buch „Mimesis" (1946) mit der Narbenszene. Er sah in Homers Stil das Prinzip des <b>gleichmäßig ausgeleuchteten Vordergrunds</b>: alles wird gegenwärtig, sinnlich und vollständig geschildert, ohne dunkle Hintergründe oder verschwiegene Tiefen. Selbst mitten in der Spannung der Wiedererkennung hält der Dichter inne, um in aller Ruhe die Herkunft der Narbe zu erzählen. Auerbach stellte dem die knappe, andeutungsreiche, „hintergründige" Erzählweise der Bibel gegenüber – zwei Urformen des abendländischen Erzählens.</p>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ DEUTUNG ============================ -->
+<section id="deutung" class="block reveal">
+  <div class="kicker"><span class="n">08</span><span class="label">Was es bedeutet</span></div>
+  <h2 class="h">Themen &amp; Deutung</h2>
+  <div class="prose">
+    <p class="lead">Unter dem Abenteuer liegen die großen Fragen: Heimat, Gastrecht, List, Identität, Gerechtigkeit – und der Preis, ein Ich zu sein.</p>
+
+    <h3 class="sub">Nostos <span class="gr">νόστος</span> — die Heimkehr</h3>
+    <p>Das Grundthema. „Nostoi" hießen die Heimkehrsagen aller Griechen von Troja. Die Odyssee stellt Odysseus' geglückte Heimkehr bewusst dem <em>Gegenbild</em> Agamemnons gegenüber, der bei der Rückkehr von Frau und deren Liebhaber ermordet wird. Penelopes Treue und Odysseus' Vorsicht sind die Antwort auf dieses Schreckbild.</p>
+
+    <h3 class="sub">Xenia <span class="gr">ξενία</span> — das Gastrecht</h3>
+    <p>Gastfreundschaft ist heilige Ordnung und Prüfstein der Zivilisation. Wer sie ehrt (die Phäaken, Eumaios), steht im Recht; wer sie bricht, ist Barbar: Polyphem „bewirtet" seine Gäste, indem er sie frisst; die Freier zehren als „Gäste" das Haus des Abwesenden auf. Xenia wirkt wie ein sakraler Handschlag zwischen Fremden – ein verbindliches Protokoll in einer Welt vor Hotels und Verträgen.</p>
+
+    <h3 class="sub">Metis <span class="gr">μῆτις</span> — die List</h3>
+    <p>Odysseus' Signatur ist <em>polymetis</em>, „reich an Klugheit". Er siegt durch Geist statt Gewalt: das Hölzerne Pferd, der Trick mit „Niemand", der Wachs-und-Mast-Plan bei den Sirenen. Der Trickster ist ein neuer Heldentyp neben dem rohen Kämpfer.</p>
+
+    <h3 class="sub">Kleos <span class="gr">κλέος</span> — Ruhm im Lied</h3>
+    <p>Der Sänger verleiht Unsterblichkeit. Am Phäakenhof hört Odysseus in Demodokos' Lied von Troja plötzlich seine eigene Geschichte – und weint. Ein tiefer Moment: der Held begegnet seinem eigenen Nachruhm, noch bevor er heimgekehrt ist.</p>
+
+    <h3 class="sub">Anagnorisis — die Wiedererkennung</h3>
+    <p>Kaum ein Epos kennt so viele Erkennungsszenen: die Narbe (Eurykleia), der sterbende Hund Argos, der gespannte Bogen, das unbewegliche Ehebett (Penelopes Prüfung), der greise Vater im Garten. Man kann sie als antike „biometrische Authentifizierung" lesen: Die Narbe ist ein Fingerabdruck, das Geheimnis des Betts ein Passwort, das nur der echte Odysseus kennt – Penelope „verifiziert" den Heimkehrer, bevor sie ihn einlässt.</p>
+
+    <h3 class="sub">„Niemand" — Identität und ihr Preis (Adorno)</h3>
+    <p>Um zu überleben, verleugnet Odysseus seinen Namen: Er ist „Niemand" (<em>Outis</em>) – und muss am Ende seine Identität mühsam zurückgewinnen. Adorno und Horkheimer widmeten diesem Motiv in der „Dialektik der Aufklärung" (1947) einen berühmten Exkurs: Odysseus sei der erste „moderne" Subjekttypus, der sich gegen Mythos und Natur behauptet – doch um sich zu erhalten, muss er sich (zeitweise) preisgeben, verstellen, entsagen. Die Selbstbehauptung des Ich hat einen Preis. Ihr Sinnbild ist die Sirenen-Szene: Die Ruderer arbeiten mit verstopften Ohren; nur der gefesselte Herr darf hören, aber nicht handeln – ein frühes Bild von Herrschaft, Arbeitsteilung und dem Genuss, der Verzicht voraussetzt.</p>
+
+    <h3 class="sub">Die Frauen der Odyssee</h3>
+    <p>Ungewöhnlich viele starke Frauengestalten: Penelope mit ihrer eigenen List des Gewebes; Kirke und Kalypso als autonome, gefährliche Mächte, die den Helden binden; die kluge Nausikaa; und die zwölf getöteten Mägde, deren Schicksal bis heute verstört. Moderne Neudichtungen (Margaret Atwood, Barbara Köhler, Madeline Miller) geben gerade ihnen die Stimme zurück.</p>
+
+    <h3 class="sub">Götter, Schuld und die „zweite Reise"</h3>
+    <p>Die Menschen sind keine bloßen Spielbälle: Schon der Prolog betont, die Gefährten seien durch <em>eigene</em> Verblendung (die Sonnenrinder) zugrunde gegangen. Und die Odyssee endet nicht mit der Heimkehr: Teiresias prophezeit eine geheimnisvolle letzte Reise – Odysseus solle ein Ruder auf der Schulter landeinwärts tragen, bis ein Volk es für eine Worfschaufel hält, und dort Poseidon versöhnen. Ein offenes Ende jenseits des Meeres, aus dem Dante (Inferno XXVI) und Tennyson ihre eigene „letzte Fahrt" des rastlosen Grenzgängers gesponnen haben.</p>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ GLOSSAR ============================ -->
+<section id="glossar" class="block reveal">
+  <div class="kicker"><span class="n">09</span><span class="label">Begriffe</span></div>
+  <h2 class="h">Glossar</h2>
+  <p class="lead">Die griechischen Schlüsselwörter, die das Epos und seine Deutung tragen.</p>
+  <dl class="glossary">
+    <div class="term"><dt>Nostos <span class="gr">νόστος</span></dt><dd>Die Heimkehr – das zentrale Thema und der Kern der Gattung „Heimkehrdichtung".</dd></div>
+    <div class="term"><dt>Nostoi <span class="gr">νόστοι</span></dt><dd>Die Heimkehrsagen aller Griechen von Troja; auch Titel eines verlorenen Epos des Kyklos.</dd></div>
+    <div class="term"><dt>Xenia <span class="gr">ξενία</span></dt><dd>Das heilige Gastrecht zwischen Fremdem und Gastgeber, wechselseitig verpflichtend.</dd></div>
+    <div class="term"><dt>Metis <span class="gr">μῆτις</span></dt><dd>Kluge List, findiges Denken – die Kernfähigkeit des Odysseus (<i>polymetis</i>).</dd></div>
+    <div class="term"><dt>Polytropos <span class="gr">πολύτροπος</span></dt><dd>„Vielgewandt, von vielen Wendungen" – das erste Beiwort des Odysseus im Epos.</dd></div>
+    <div class="term"><dt>Kleos <span class="gr">κλέος</span></dt><dd>Ruhm, der im Lied fortlebt – die „Unsterblichkeit" des Helden.</dd></div>
+    <div class="term"><dt>Hybris <span class="gr">ὕβρις</span></dt><dd>Vermessener Übermut, der die göttliche Ordnung verletzt (die Freier, Polyphem).</dd></div>
+    <div class="term"><dt>Ate <span class="gr">ἄτη</span></dt><dd>Verblendung, die zum Unheil treibt – etwa als die Gefährten die Sonnenrinder schlachten.</dd></div>
+    <div class="term"><dt>Anagnorisis <span class="gr">ἀναγνώρισις</span></dt><dd>Die Wiedererkennung – Wendepunkt der Handlung (Narbe, Bett, Bogen).</dd></div>
+    <div class="term"><dt>Apologoi <span class="gr">ἀπόλογοι</span></dt><dd>Die Ich-Erzählung der Irrfahrten am Phäakenhof (Gesänge 9–12).</dd></div>
+    <div class="term"><dt>Nekyia <span class="gr">νέκυια</span></dt><dd>Die Totenbeschwörung – Odysseus' Gang an den Rand der Unterwelt (Gesang 11).</dd></div>
+    <div class="term"><dt>Moly <span class="gr">μῶλυ</span></dt><dd>Das Zauberkraut des Hermes, das Odysseus gegen Kirkes Verwandlung feit.</dd></div>
+    <div class="term"><dt>Kredemnon <span class="gr">κρήδεμνον</span></dt><dd>Der Schleier – hier das rettende Tuch der Meergöttin Ino/Leukothea.</dd></div>
+    <div class="term"><dt>Aoidos <span class="gr">ἀοιδός</span></dt><dd>Der Sänger, der Epen zur Leier vorträgt (Phemios, Demodokos).</dd></div>
+    <div class="term"><dt>Rhapsode <span class="gr">ῥαψῳδός</span></dt><dd>Der „Liederflicker", Vortragskünstler, der die überlieferten Epen rezitierte.</dd></div>
+    <div class="term"><dt>Hexameter</dt><dd>Das sechsfüßige daktylische Versmaß der antiken Epik, in dem die ganze Odyssee gedichtet ist.</dd></div>
+  </dl>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ REZEPTION ============================ -->
+<section id="rezeption" class="block reveal">
+  <div class="kicker"><span class="n">10</span><span class="label">Nachleben</span></div>
+  <h2 class="h">Rezeption &amp; Adaptionen</h2>
+  <p class="lead">Kein Stoff ist öfter neu erzählt worden. Von der antiken Fortschreibung bis zu Christopher Nolans IMAX-Epos von 2026.</p>
+
+  <div class="cat">
+    <h3>Antike Fortschreibung</h3>
+    <p class="ci">Schon in der Antike wuchsen Fortsetzungen und Umdeutungen um das Epos.</p>
+    <div class="works">
+      <div class="work"><span class="yr">Kyklos</span><span class="wx"><b>Nostoi</b> &amp; <b>Telegonie</b> – verlorene Epen; in der <i>Telegonie</i> (Eugammon) tötet Telegonos, Sohn von Odysseus und Kirke, den Vater unwissentlich.</span></div>
+      <div class="work"><span class="yr">29–19 v. Chr.</span><span class="wx">Vergil, <i>Aeneis</i> – die Irrfahrten des Aeneas (Buch 1–6) als römisches Gegenstück und bewusste Homer-Nachfolge.</span></div>
+      <div class="work"><span class="yr">um 8 n. Chr.</span><span class="wx">Ovid, <i>Metamorphosen</i> (Kirke, Polyphem/Galatea) und <i>Heroides</i> (Penelopes Brief an Odysseus).</span></div>
+      <div class="work"><span class="yr">5. Jh. v. Chr.</span><span class="wx">Euripides, Satyrspiel <i>Kyklops</i> – die Polyphem-Episode für die Bühne; Odysseus auch bei Sophokles (<i>Aias</i>, <i>Philoktetes</i>).</span></div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <h3>Literatur</h3>
+    <p class="ci">Vom mittelalterlichen Grenzgänger bis zur feministischen Gegenstimme der Gegenwart.</p>
+    <div class="works">
+      <div class="work"><span class="yr">um 1310</span><span class="wx">Dante, <i>Inferno</i> XXVI – Ulisse im 8. Höllenkreis; Dante erfindet die tödliche letzte Fahrt über die Säulen des Herakles hinaus.</span></div>
+      <div class="work"><span class="yr">1780er</span><span class="wx">Goethe, <i>Nausikaa</i> – Dramenfragment; das reiche deutsche Homer-Erbe der Klassik.</span></div>
+      <div class="work"><span class="yr">1833/42</span><span class="wx">Alfred Tennyson, <i>Ulysses</i> – Monolog des alternden, rastlosen Helden: „To strive, to seek, to find, and not to yield."</span></div>
+      <div class="work"><span class="yr">1922</span><span class="wx">James Joyce, <i>Ulysses</i> – ein Tag in Dublin; Bloom = Odysseus, Stephen = Telemachos, Molly = Penelope; die Kapitel spiegeln Odyssee-Stationen.</span></div>
+      <div class="work"><span class="yr">1938</span><span class="wx">Nikos Kazantzakis, <i>Odyssee. Ein modernes Epos</i> – 33.333 Verse, Fortsetzung nach dem Freiermord.</span></div>
+      <div class="work"><span class="yr">1990</span><span class="wx">Derek Walcott, <i>Omeros</i> – karibisches Epos nach Homer (Literaturnobelpreis).</span></div>
+      <div class="work"><span class="yr">2005</span><span class="wx">Margaret Atwood, <i>Die Penelopiade</i> – Penelope und die zwölf gehängten Mägde erzählen ihre Version.</span></div>
+      <div class="work"><span class="yr">2018</span><span class="wx">Madeline Miller, <i>Circe</i> – die Zauberin als Ich-Erzählerin.</span></div>
+      <div class="work"><span class="yr">1987</span><span class="wx">Inge Merkel, <i>Eine ganz gewöhnliche Ehe. Odysseus und Penelope</i> – deutschsprachige Neuerzählung der Ehe.</span></div>
+      <div class="work"><span class="yr">2007</span><span class="wx">Barbara Köhler, <i>Niemands Frau. Gesänge</i> – feministische Neudichtung aus weiblicher Perspektive.</span></div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <h3>Oper &amp; Musik</h3>
+    <p class="ci">Von einer der frühesten erhaltenen Opern bis zur Zwölftonmusik – und zur Filmmusik der Gegenwart.</p>
+    <div class="works">
+      <div class="work"><span class="yr">1640</span><span class="wx">Claudio Monteverdi, <i>Il ritorno d'Ulisse in patria</i> – die Heimkehr; eine der frühesten erhaltenen Opern überhaupt.</span></div>
+      <div class="work"><span class="yr">1765</span><span class="wx">Christoph Willibald Gluck, <i>Telemaco, ossia L'isola di Circe</i>.</span></div>
+      <div class="work"><span class="yr">1873</span><span class="wx">Max Bruch, <i>Odysseus</i> – weltliches Oratorium op. 41.</span></div>
+      <div class="work"><span class="yr">1890er</span><span class="wx">August Bungert, Tetralogie <i>Homerische Welt / Die Odyssee</i> – wagnerianischer Zyklus, heute vergessen.</span></div>
+      <div class="work"><span class="yr">1913</span><span class="wx">Gabriel Fauré, <i>Pénélope</i> – Oper (Libretto René Fauchois).</span></div>
+      <div class="work"><span class="yr">1968</span><span class="wx">Luigi Dallapiccola, <i>Ulisse</i> – Zwölftonoper.</span></div>
+      <div class="work"><span class="yr">1987</span><span class="wx">Suzanne Vega, <i>Calypso</i> – die Nymphe im Popsong.</span></div>
+      <div class="work"><span class="yr">2024/26</span><span class="wx">Filmmusik: Rachel Portman (<i>The Return</i>, 2024); Ludwig Göransson (Nolans <i>The Odyssey</i>, 2026).</span></div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <h3>Malerei &amp; bildende Kunst</h3>
+    <p class="ci">Von der frühesten Vasenmalerei über Turner und Böcklin bis zu de Chirico und Bearden.</p>
+    <div class="works">
+      <div class="work"><span class="yr">um 660 v. Chr.</span><span class="wx">Blendung Polyphems – proto-attische <b>Eleusis-Amphora</b>, eines der frühesten Beispiele.</span></div>
+      <div class="work"><span class="yr">um 480 v. Chr.</span><span class="wx">Die <b>Sirenenvase</b> (attisch-rotfiguriger Stamnos, British Museum): Odysseus am Mast.</span></div>
+      <div class="work"><span class="yr">1. Jh. v. Chr.</span><span class="wx">Die römischen <b>Odyssee-Landschaften</b> (Esquilin, heute Vatikan) – frühe Landschaftsmalerei.</span></div>
+      <div class="work"><span class="yr">1. Jh.</span><span class="wx">Die <b>Sperlonga-Skulpturen</b> – hellenistische Marmorgruppen (Polyphem, Skylla) aus der Grotte des Tiberius.</span></div>
+      <div class="work"><span class="yr">um 1509</span><span class="wx">Pinturicchio, <i>Penelope mit den Freiern</i> (Fresko; heute National Gallery, London).</span></div>
+      <div class="work"><span class="yr">1793</span><span class="wx">John Flaxman, Umrisszeichnungen zur <i>Odyssee</i> – einflussreiche neoklassizistische Illustration.</span></div>
+      <div class="work"><span class="yr">1829</span><span class="wx">J. M. W. Turner, <i>Ulysses deriding Polyphemus</i> (National Gallery, London) – Romantik in Licht und Farbe.</span></div>
+      <div class="work"><span class="yr">19. Jh.</span><span class="wx">Friedrich Preller d. Ä., <i>Odyssee-Landschaften</i> (Weimar) – deutscher romantischer Bildzyklus.</span></div>
+      <div class="work"><span class="yr">1883</span><span class="wx">Arnold Böcklin, <i>Odysseus und Kalypso</i> (Kunstmuseum Basel) – der Heimwehblick aufs Meer.</span></div>
+      <div class="work"><span class="yr">1891</span><span class="wx">John William Waterhouse, <i>Ulysses and the Sirens</i> und <i>Circe Offering the Cup</i>.</span></div>
+      <div class="work"><span class="yr">1968</span><span class="wx">Giorgio de Chirico, <i>Il ritorno di Ulisse</i> – Ulysses rudert metaphysisch in einem Zimmer.</span></div>
+      <div class="work"><span class="yr">1977</span><span class="wx">Romare Bearden, <i>A Black Odyssey</i> – Collagen-Serie, die die Odyssee mit schwarzen Figuren neu erzählt.</span></div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <h3>Film &amp; Bühne</h3>
+    <p class="ci">Vom Sandalenfilm über metaphysische Umdeutungen bis zu zwei aktuellen Großverfilmungen 2024/2026.</p>
+    <div class="works">
+      <div class="work"><span class="yr">1954</span><span class="wx">Mario Camerini, <i>Ulysses</i> – Kirk Douglas als Odysseus, Silvana Mangano als Penelope/Kirke.</span></div>
+      <div class="work"><span class="yr">1963</span><span class="wx">Jean-Luc Godard, <i>Die Verachtung</i> – Film im Film: Fritz Lang verfilmt die Odyssee.</span></div>
+      <div class="work"><span class="yr">1968</span><span class="wx">Franco Rossi, <i>L'Odissea</i> – gefeierter ital. TV-Mehrteiler (Bekim Fehmiu, Irene Papas).</span></div>
+      <div class="work"><span class="yr">1968</span><span class="wx">Stanley Kubrick, <i>2001: A Space Odyssey</i> – freie Analogie: HAL 9000 als „Auge des Kyklopen", das Summen des Monolithen als Sirenengesang, „Dave Bowman" als Anspielung auf den Bogenschützen.</span></div>
+      <div class="work"><span class="yr">1995</span><span class="wx">Theo Angelopoulos, <i>Der Blick des Odysseus</i> – eine Balkan-Odyssee.</span></div>
+      <div class="work"><span class="yr">1997</span><span class="wx">Andrei Kontschalowski, <i>The Odyssey</i> – TV-Mehrteiler mit Armand Assante (Emmy).</span></div>
+      <div class="work"><span class="yr">2000</span><span class="wx">Coen-Brüder, <i>O Brother, Where Art Thou?</i> – Südstaaten-Nacherzählung mit Sirenen und einäugigem Riesen.</span></div>
+      <div class="work"><span class="yr">2024</span><span class="wx">Uberto Pasolini, <i>The Return</i> – nur die zweite Hälfte (Heimkehr, ohne Monster); Ralph Fiennes &amp; Juliette Binoche.</span></div>
+      <div class="work"><span class="yr">2026</span><span class="wx">Christopher Nolan, <i>The Odyssey</i> – IMAX-Großproduktion (Kinostart 17. Juli 2026); Matt Damon, Anne Hathaway, Tom Holland, Zendaya u. a.</span></div>
+    </div>
+  </div>
+</section>
+
+<svg class="wave" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 13 Q75 0 150 13 T300 13 T450 13 T600 13 T750 13 T900 13 T1050 13 T1200 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+
+<!-- ============================ QUELLEN ============================ -->
+<section id="quellen" class="block reveal">
+  <div class="kicker"><span class="n">11</span><span class="label">Zum Vertiefen</span></div>
+  <h2 class="h">Quellen &amp; Weiterlesen</h2>
+  <p class="lead">Geprüfte Adressen (Stand Juli 2026) – Volltexte, Übersetzungen, Nachschlagewerke und Verfilmungen.</p>
+
+  <div class="lgroup">
+    <h3><span class="label" style="color:var(--terra)">Primärtext online</span></h3>
+    <p class="li">Der vollständige Text – griechisch, zweisprachig und in deutscher Übersetzung.</p>
+    <ul class="links">
+      <li><a href="https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0135">Perseus Digital Library – Odyssee (Griechisch &amp; Englisch)</a><span class="u">perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0135</span><span class="d">Griechischer Originaltext mit englischer Übersetzung, Wort-für-Wort-Analyse und Kommentaren.</span></li>
+      <li><a href="https://scaife.perseus.org/library/urn:cts:greekLit:tlg0012.tlg002/">Scaife Viewer – Odyssee (griechisch, moderne Oberfläche)</a><span class="u">scaife.perseus.org/library/urn:cts:greekLit:tlg0012.tlg002/</span><span class="d">Die aktuelle Leseumgebung des Perseus-Projekts.</span></li>
+      <li><a href="http://www.zeno.org/Literatur/M/Homer/Epen/Odyssee">zeno.org – Odyssee, Übersetzung Voß (gut lesbar)</a><span class="u">zeno.org/Literatur/M/Homer/Epen/Odyssee</span><span class="d">Vollständige deutsche Fassung von Johann Heinrich Voß (1781), gemeinfrei.</span></li>
+      <li><a href="https://www.projekt-gutenberg.org/homer/odyssee/odyssee.html">Projekt Gutenberg-DE – Odyssee (Voß)</a><span class="u">projekt-gutenberg.org/homer/odyssee/odyssee.html</span><span class="d">Die deutsche Standard-Versübersetzung im Volltext.</span></li>
+    </ul>
+  </div>
+
+  <div class="lgroup">
+    <h3><span class="label" style="color:var(--terra)">Übersetzungen (Druck)</span></h3>
+    <p class="li">Empfehlenswerte deutsche und englische Ausgaben.</p>
+    <ul class="reflist">
+      <li><b>Johann Heinrich Voß</b> (1781) – die klassische Versübersetzung, sprachschöpferisch, aber „blumiger" als das Original.</li>
+      <li><b>Wolfgang Schadewaldt</b> (1958) – Prosaübersetzung, nah am griechischen Text; gilt vielen als die genaueste.</li>
+      <li><b>Kurt Steinmann</b> (Manesse, 2007) – moderne Versfassung mit Nachwort von Walter Burkert.</li>
+      <li><b>Roland Hampe</b> (Reclam) – handliche, verständliche Versübersetzung.</li>
+      <li><b>Emily Wilson</b> (Norton, 2017, engl.) – erste Odyssee-Übersetzung ins Englische von einer Frau; klare, jambische Sprache (Nolan nennt sie als Inspiration seines Films).</li>
+    </ul>
+  </div>
+
+  <div class="lgroup">
+    <h3><span class="label" style="color:var(--terra)">Nachschlagewerke &amp; Überblick</span></h3>
+    <ul class="links">
+      <li><a href="https://de.wikipedia.org/wiki/Odyssee">Wikipedia (deutsch) – Odyssee</a><span class="u">de.wikipedia.org/wiki/Odyssee</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/Odyssey">Wikipedia (englisch) – Odyssey</a><span class="u">en.wikipedia.org/wiki/Odyssey</span></li>
+      <li><a href="https://wiki.bildungsserver.de/weltliteratur/index.php/Odyssee">Bildungsserver-Wiki „Weltliteratur" – Odyssee</a><span class="u">wiki.bildungsserver.de/weltliteratur/index.php/Odyssee</span><span class="d">Kompakter, verlässlicher Überblick zu Inhalt, Struktur und Rezeption.</span></li>
+      <li><a href="https://vossmuseum-otterndorf.de/homers-oduessee/">Johann-Heinrich-Voß-Museum Otterndorf – zur Voß-Übersetzung</a><span class="u">vossmuseum-otterndorf.de/homers-oduessee/</span></li>
+    </ul>
+  </div>
+
+  <div class="lgroup">
+    <h3><span class="label" style="color:var(--terra)">Aktuelle Verfilmungen (Belege)</span></h3>
+    <ul class="links">
+      <li><a href="https://en.wikipedia.org/wiki/The_Odyssey_(2026_film)">Christopher Nolan, „The Odyssey" (2026)</a><span class="u">en.wikipedia.org/wiki/The_Odyssey_(2026_film)</span><span class="d">Weltpremiere London 6. Juli 2026, Kinostart 17. Juli 2026; mit Matt Damon, Anne Hathaway, Tom Holland, Zendaya.</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/The_Return_(2024_film)">Uberto Pasolini, „The Return" (2024)</a><span class="u">en.wikipedia.org/wiki/The_Return_(2024_film)</span><span class="d">Erzählt nur die Heimkehr – ohne Monster; mit Ralph Fiennes und Juliette Binoche.</span></li>
+    </ul>
+  </div>
+
+  <div class="lgroup">
+    <h3><span class="label" style="color:var(--terra)">Sekundärliteratur (Auswahl)</span></h3>
+    <ul class="reflist">
+      <li>Erich Auerbach, <b>Mimesis</b> (1946), Kap. 1 „Die Narbe des Odysseus" – klassische Analyse des homerischen Erzählstils.</li>
+      <li>Uvo Hölscher, <b>Die Odyssee. Epos zwischen Märchen und Roman</b> – Standardwerk zur Erzählform.</li>
+      <li>Karl Reinhardt, <b>Die Abenteuer der Odyssee</b> – berühmte Einzelinterpretationen.</li>
+      <li>Joachim Latacz, <b>Homer. Der erste Dichter des Abendlands</b> sowie <b>Troia und Homer</b>.</li>
+      <li>Max Horkheimer / Theodor W. Adorno, <b>Dialektik der Aufklärung</b> (1947) – der Odysseus-Exkurs.</li>
+      <li>Walter Burkert, <b>Griechische Religion der archaischen und klassischen Epoche</b> – Hintergrund zu Göttern und Kult.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fx"><b>Die Odyssee · Ein Wiki.</b> Zusammengestellt als eigenständige, offline nutzbare Seite – ohne Server, ohne Tracking, ohne externe Schriften oder Skripte. Alle Textzitate im Kopf folgen der gemeinfreien Voß-Übersetzung (1781).</p>
+    <p class="disc">Hinweis zu den Quellen: Die verlinkten Adressen wurden im Juli 2026 geprüft; die Angaben zu den beiden aktuellen Verfilmungen (Nolan 2026, Pasolini 2024) stammen aus den jeweils verlinkten Belegen. Datierungen antiker Werke sind gerundet und in der Forschung teils umstritten. Web-Adressen können sich ändern.</p>
+  </div>
+</footer>
+
+<button class="toTop" id="toTop" aria-label="Nach oben">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+
+  /* ---- Theme toggle (persistiert best-effort) ---- */
+  var toggle = document.getElementById('themeToggle');
+  function syncToggle() {
+    var isDay = root.getAttribute('data-theme') === 'day';
+    toggle.setAttribute('aria-pressed', isDay ? 'true' : 'false');
+    toggle.title = isDay ? 'Zum Nachtmodus wechseln' : 'Zum Tagmodus wechseln';
+  }
+  syncToggle();
+  toggle.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'day' ? 'night' : 'day';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('odyssee-theme', next); } catch (e) {}
+    syncToggle();
+  });
+
+  /* ---- Scroll-Fortschritt ---- */
+  var bar = document.getElementById('progress');
+  var toTop = document.getElementById('toTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    bar.style.width = p + '%';
+    if (h.scrollTop > 600) { toTop.classList.add('show'); } else { toTop.classList.remove('show'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+
+  /* ---- Aktiven Navigations-Link markieren ---- */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.menu a'));
+  var map = {};
+  links.forEach(function (a) {
+    var id = a.getAttribute('href').slice(1);
+    var sec = document.getElementById(id);
+    if (sec) { map[id] = a; }
+  });
+  var sections = Object.keys(map).map(function (id) { return document.getElementById(id); });
+  if ('IntersectionObserver' in window) {
+    var navObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove('active'); });
+          var a = map[en.target.id];
+          if (a) {
+            a.classList.add('active');
+            /* aktiven Link in der scrollbaren Leiste sichtbar halten */
+            if (a.scrollIntoView) { a.scrollIntoView({ inline: 'center', block: 'nearest' }); }
+          }
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    sections.forEach(function (s) { navObs.observe(s); });
+  }
+
+  /* ---- Scroll-Reveal (nur wenn Bewegung erlaubt) ---- */
+  if (!reduce && 'IntersectionObserver' in window) {
+    document.body.classList.add('anim');
+    var revObs = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); obs.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    document.querySelectorAll('.reveal').forEach(function (el) { revObs.observe(el); });
+  }
+})();
+</script>
+<script>
+/* ===================== Interaktive Karte ===================== */
+(function () {
+  "use strict";
+  var svg = document.getElementById('mapSvg');
+  if (!svg) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var ST  = [{"i": 0, "n": "Troja", "x": 708.0, "y": 275.7, "k": "hist", "leg": null, "o": "Hisarl&#305;k, T&uuml;rkei &middot; arch&auml;ologisch fassbar", "t": "Mit zw&ouml;lf Schiffen bricht Odysseus vom eroberten Troja auf. Zehn Jahre Krieg liegen hinter ihm, zehn Jahre Meer vor ihm.", "g": "Vorgeschichte"}, {"i": 1, "n": "Ismaros &middot; Kikonen", "x": 684.0, "y": 235.7, "k": "hist", "leg": "l0", "o": "Maroneia, Thrakien &middot; von Homer real verortet", "t": "Die M&auml;nner pl&uuml;ndern die Stadt und bleiben aus &Uuml;bermut zu lange. Die Kikonen kehren mit Verb&uuml;ndeten zur&uuml;ck und schlagen sie: erste schwere Verluste.", "g": "Gesang 9"}, {"i": 2, "n": "Land der Lotophagen", "x": 195.0, "y": 532.5, "k": "myth", "leg": "l1", "o": "traditionell: Djerba, Tunesien", "t": "Am Kap Malea vom Nordwind abgetrieben. Wer vom Lotos isst, verliert jede Sehnsucht nach der Heimat &ndash; Odysseus muss die Bet&auml;ubten an Bord zerren.", "g": "Gesang 9"}, {"i": 3, "n": "Insel der Kyklopen", "x": 338.7, "y": 378.2, "k": "myth", "leg": "l2", "o": "traditionell: Ostsizilien am &Auml;tna (Aci Trezza)", "t": "Polyphem sperrt die M&auml;nner in seine H&ouml;hle. Odysseus nennt sich &bdquo;Niemand&ldquo; und blendet ihn &ndash; doch der Ruf des wahren Namens beim Abfahren zieht Poseidons Fluch nach sich.", "g": "Gesang 9"}, {"i": 4, "n": "Aiolia", "x": 331.7, "y": 339.7, "k": "myth", "leg": "l3", "o": "traditionell: Lipari, &Auml;olische Inseln", "t": "Aiolos schenkt alle widrigen Winde in einem Schlauch. In Sichtweite Ithakas &ouml;ffnen ihn die neugierigen Gef&auml;hrten &ndash; der Sturm bl&auml;st alle zur&uuml;ck (goldene Schleife).", "g": "Gesang 10"}, {"i": 5, "n": "Telepylos &middot; Laistrygonen", "x": 138.7, "y": 212.7, "k": "myth", "leg": "l4", "o": "traditionell: Bonifacio (Korsika); auch Formia/Gaeta", "t": "Die menschenfressenden Riesen zerschmettern elf der zw&ouml;lf Schiffe mit Felsbrocken. Nur das Schiff des Odysseus entkommt &ndash; der schwerste Verlust der Reise.", "g": "Gesang 10"}, {"i": 6, "n": "Aiaia &middot; Kirke", "x": 269.7, "y": 219.4, "k": "myth", "leg": "l5", "o": "traditionell: Monte Circeo, Latium", "t": "Kirke verwandelt die Gef&auml;hrten in Schweine. Mit dem Kraut Moly gefeit, widersteht Odysseus, wird ihr Geliebter und bleibt ein Jahr. Sie weist den Weg in die Unterwelt.", "g": "Gesang 10"}, {"i": 7, "n": "Am Rand des Okeanos", "x": 26.7, "y": 351.1, "k": "edge", "leg": "nekyia", "o": "jenseits jeder Karte &ndash; im Land der Kimmerier", "t": "Am Weltensaum beschw&ouml;rt Odysseus die Toten. Teiresias prophezeit die Heimkehr und eine letzte Reise mit dem Ruder. Der Weg dorthin verl&auml;sst die Landkarte (violett).", "g": "Gesang 11"}, {"i": 8, "n": "Die Sirenen", "x": 314.3, "y": 249.8, "k": "myth", "leg": "l6", "o": "traditionell: Li Galli bei Positano", "t": "Ihr Lied verspricht Allwissen und lockt in den Tod. Der Mannschaft Wachs in die Ohren, sich selbst an den Mast: h&ouml;ren und doch &uuml;berleben.", "g": "Gesang 12"}, {"i": 9, "n": "Skylla &amp; Charybdis", "x": 354.3, "y": 349.4, "k": "myth", "leg": "l7", "o": "Stra&szlig;e von Messina &ndash; die klassische Zuordnung", "t": "Sechsk&ouml;pfiges Ungeheuer und alles verschlingender Strudel in der Enge. Odysseus w&auml;hlt das kleinere &Uuml;bel: Skylla frisst sechs M&auml;nner.", "g": "Gesang 12"}, {"i": 10, "n": "Thrinakia", "x": 312.7, "y": 394.5, "k": "myth", "leg": "l8", "o": "traditionell: Sizilien (antik <i>Trinakria</i>)", "t": "Trotz Warnung schlachten die ausgehungerten Gef&auml;hrten die heiligen Rinder des Helios. Zeus zerschmettert das Schiff; alle ertrinken au&szlig;er Odysseus.", "g": "Gesang 12"}, {"i": 11, "n": "Ogygia &middot; Kalypso", "x": 308.0, "y": 441.0, "k": "myth", "leg": "l9", "o": "traditionell: Gozo, Malta", "t": "Sieben Jahre h&auml;lt ihn die Nymphe fest und bietet Unsterblichkeit &ndash; er w&auml;hlt die sterbliche Heimat. <b>Hier setzt das Epos ein.</b>", "g": "Ges&auml;nge 1 &amp; 5"}, {"i": 12, "n": "Scheria &middot; Ph&auml;aken", "x": 497.3, "y": 290.3, "k": "myth", "leg": "l10", "o": "traditionell: Korfu", "t": "Nausikaa findet den Schiffbr&uuml;chigen am Strand. Am Hof des Alkinoos erz&auml;hlt Odysseus seine Irrfahrten &ndash; die Ges&auml;nge 9&ndash;12 sind seine eigene Stimme.", "g": "Ges&auml;nge 6&ndash;13"}, {"i": 13, "n": "Ithaka", "x": 523.7, "y": 342.6, "k": "hist", "leg": "l11", "o": "Ithaki &ndash; oder Paliki/Kephalonia (umstritten)", "t": "Heimkehr als Bettler: der Hund Argos, die Narbe, der Bogen, die Rache an den Freiern und das Geheimnis des Ehebetts.", "g": "Ges&auml;nge 13&ndash;24"}];
+  var TEL = [{"n": "Pylos &middot; Nestor", "x": 556.7, "y": 405.4, "o": "Messenien &middot; Palast ausgegraben", "t": "Telemachos fragt den greisen K&ouml;nig nach dem Vater. Von hier reist er <b>zu Wagen</b> weiter &ndash; deshalb l&auml;uft die Spur nach Sparta &uuml;ber Land.", "g": "Gesang 3"}, {"n": "Sparta &middot; Menelaos", "x": 581.0, "y": 398.7, "o": "Lakonien &middot; mykenisches Zentrum", "t": "Menelaos und Helena berichten, Odysseus werde von Kalypso festgehalten. Die erste sichere Kunde vom Vater.", "g": "Gesang 4"}];
+
+  var VB0 = { x: 0, y: 0, w: 1000, h: 681.8 };
+  var vb  = { x: 0, y: 0, w: VB0.w, h: VB0.h };
+  var panel = document.getElementById('mapPanel');
+  var ship  = document.getElementById('mapShip');
+  var marks = Array.prototype.slice.call(svg.querySelectorAll('.mk'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var cur = -1, playing = false, raf = null, timer = null;
+
+  /* ---- Ansicht ---- */
+  function apply() {
+    svg.setAttribute('viewBox', vb.x + ' ' + vb.y + ' ' + vb.w + ' ' + vb.h);
+    var k = vb.w / VB0.w;                      /* Marker in konstanter Gr\u00f6\u00dfe halten */
+    marks.forEach(function (m) {
+      var d = m.getAttribute('data-xy').split(',');
+      m.setAttribute('transform', 'translate(' + d[0] + ' ' + d[1] + ') scale(' + k + ')');
+    });
+    ship.setAttribute('data-k', k);
+  }
+  marks.forEach(function (m) {
+    var t = m.getAttribute('transform').match(/translate\(([-\d.]+) ([-\d.]+)\)/);
+    m.setAttribute('data-xy', t[1] + ',' + t[2]);
+  });
+
+  function clamp() {
+    var maxW = VB0.w * 1.15, minW = VB0.w * 0.12;
+    vb.w = Math.min(maxW, Math.max(minW, vb.w));
+    vb.h = vb.w * VB0.h / VB0.w;
+    vb.x = Math.min(VB0.w - vb.w * 0.15, Math.max(vb.w * -0.15 + 0, Math.min(vb.x, VB0.w - vb.w * 0.85)));
+    vb.y = Math.max(-vb.h * 0.1, Math.min(vb.y, VB0.h - vb.h * 0.9));
+  }
+  function zoom(f, cx, cy) {
+    if (cx === undefined) { cx = vb.x + vb.w / 2; cy = vb.y + vb.h / 2; }
+    var nw = vb.w * f;
+    nw = Math.min(VB0.w * 1.15, Math.max(VB0.w * 0.12, nw));
+    var s = nw / vb.w;
+    vb.x = cx - (cx - vb.x) * s;
+    vb.y = cy - (cy - vb.y) * s;
+    vb.w = nw; vb.h = nw * VB0.h / VB0.w;
+    clamp(); apply();
+  }
+  function focus(x, y, w) {
+    vb.w = w; vb.h = w * VB0.h / VB0.w;
+    vb.x = x - vb.w / 2; vb.y = y - vb.h / 2;
+    clamp(); apply();
+  }
+  function reset() { vb = { x: 0, y: 0, w: VB0.w, h: VB0.h }; apply(); }
+
+  document.getElementById('mapIn').addEventListener('click', function () { zoom(1 / 1.5); });
+  document.getElementById('mapOut').addEventListener('click', function () { zoom(1.5); });
+  document.getElementById('mapReset').addEventListener('click', function () { stop(); reset(); close(); clearLegs(); });
+
+  /* ---- Pan & Pinch ---- */
+  var drag = null, pinch = null;
+  function pt(e) {
+    var r = svg.getBoundingClientRect();
+    return { x: vb.x + (e.clientX - r.left) / r.width * vb.w,
+             y: vb.y + (e.clientY - r.top) / r.height * vb.h };
+  }
+  svg.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.mk')) return;
+    drag = { sx: e.clientX, sy: e.clientY, vx: vb.x, vy: vb.y };
+    svg.classList.add('drag'); svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var r = svg.getBoundingClientRect();
+    vb.x = drag.vx - (e.clientX - drag.sx) / r.width * vb.w;
+    vb.y = drag.vy - (e.clientY - drag.sy) / r.height * vb.h;
+    clamp(); apply();
+  });
+  function endDrag(e) { drag = null; svg.classList.remove('drag'); }
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', endDrag);
+  svg.addEventListener('wheel', function (e) {
+    if (!e.ctrlKey && !e.metaKey) return;      /* sonst scrollt die Seite normal weiter */
+    e.preventDefault();
+    var p = pt(e);
+    zoom(e.deltaY > 0 ? 1.12 : 1 / 1.12, p.x, p.y);
+  }, { passive: false });
+
+  var tps = {};
+  svg.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2) {
+      drag = null;
+      var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                         e.touches[0].clientY - e.touches[1].clientY);
+      pinch = { d: d, w: vb.w };
+    }
+  }, { passive: true });
+  svg.addEventListener('touchmove', function (e) {
+    if (pinch && e.touches.length === 2) {
+      e.preventDefault();
+      var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                         e.touches[0].clientY - e.touches[1].clientY);
+      var cx = vb.x + vb.w / 2, cy = vb.y + vb.h / 2;
+      var nw = pinch.w * pinch.d / Math.max(d, 1);
+      zoom(nw / vb.w, cx, cy);
+    }
+  }, { passive: false });
+  svg.addEventListener('touchend', function () { pinch = null; });
+
+  /* ---- Etappen hervorheben ---- */
+  function legEl(id) { return id ? document.getElementById('leg-' + id) : null; }
+  function litUpTo(i) {
+    ST.forEach(function (s, j) {
+      var el = legEl(s.leg);
+      if (!el) return;
+      el.classList.toggle('lit', j === i);
+      el.classList.toggle('done', j < i);
+    });
+    var a = document.getElementById('leg-aiolos');
+    a.classList.toggle('lit', i === 4);
+    a.classList.toggle('done', i > 4);
+  }
+  function clearLegs() {
+    svg.querySelectorAll('.leg').forEach(function (l) { l.classList.remove('lit', 'done'); });
+  }
+
+  /* ---- Panel ---- */
+  var mpT = document.getElementById('mpTitle'), mpG = document.getElementById('mpGesang'),
+      mpO = document.getElementById('mpOrt'), mpX = document.getElementById('mpText'),
+      mpJ = document.getElementById('mpJump');
+  function close() {
+    panel.classList.remove('on');
+    marks.forEach(function (m) { m.classList.remove('on'); });
+    chips.forEach(function (c) { c.classList.remove('on'); });
+    cur = -1;
+  }
+
+  function show(i, doFocus) {
+    var s = ST[i];
+    cur = i;
+    mpT.innerHTML = s.n; mpG.innerHTML = s.g; mpO.innerHTML = s.o; mpX.innerHTML = s.t;
+    mpJ.style.display = '';
+    mpJ.onclick = function () { jump(i); };
+    panel.classList.add('on');
+    marks.forEach(function (m) { m.classList.toggle('on', m.getAttribute('data-i') === String(i)); });
+    chips.forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-i') === String(i)); });
+    litUpTo(i);
+    var mk = svg.querySelector('.mk[data-i="' + i + '"]');
+    if (mk && !reduce) { mk.classList.remove('ping'); void mk.offsetWidth; mk.classList.add('ping'); }
+    if (doFocus && vb.w < VB0.w * 0.95) focus(s.x, s.y, vb.w);
+  }
+  function showTel(j) {
+    var t = TEL[j];
+    mpT.innerHTML = t.n; mpG.innerHTML = t.g; mpO.innerHTML = t.o; mpX.innerHTML = t.t;
+    mpJ.style.display = 'none';
+    panel.classList.add('on');
+    marks.forEach(function (m) { m.classList.toggle('on', m.getAttribute('data-t') === String(j)); });
+    chips.forEach(function (c) { c.classList.remove('on'); });
+    cur = -1;
+  }
+
+  /* ---- Kopplung zur Timeline unten ---- */
+  var ports = Array.prototype.slice.call(document.querySelectorAll('.port'));
+  function jump(i) {
+    var p = ports[i];
+    if (!p) return;
+    p.open = true;
+    p.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  }
+
+  marks.forEach(function (m) {
+    function act() {
+      stop();
+      if (m.hasAttribute('data-i')) show(parseInt(m.getAttribute('data-i'), 10), true);
+      else showTel(parseInt(m.getAttribute('data-t'), 10));
+    }
+    m.addEventListener('click', act);
+    m.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); }
+    });
+  });
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      stop();
+      var i = parseInt(c.getAttribute('data-i'), 10);
+      show(i, false);
+      if (vb.w > VB0.w * 0.5) focus(ST[i].x, ST[i].y, VB0.w * 0.42);
+      else focus(ST[i].x, ST[i].y, vb.w);
+    });
+  });
+
+  /* ---- Telemachie-Ebene ---- */
+  var telBtn = document.getElementById('mapTel'), telLayer = document.getElementById('telLayer');
+  var telMarks = svg.querySelectorAll('.mk-tel');
+  function setTel(on) {
+    telLayer.classList.toggle('on', on);
+    telBtn.classList.toggle('on', on);
+    telBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    telMarks.forEach(function (m) { m.style.display = on ? '' : 'none'; });
+  }
+  telMarks.forEach(function (m) { m.style.display = 'none'; });
+  telBtn.addEventListener('click', function () { setTel(!telLayer.classList.contains('on')); });
+
+  /* ---- Reise abspielen ---- */
+  var playBtn = document.getElementById('mapPlay'), playTxt = document.getElementById('mapPlayTxt');
+  function setShip(x, y, ang) {
+    var k = parseFloat(ship.getAttribute('data-k') || 1);
+    ship.setAttribute('transform', 'translate(' + x + ' ' + y + ') rotate(' + ang + ') scale(' + k + ')');
+  }
+  function sail(legId, ms, done, rev) {
+    var el = legEl(legId);
+    if (!el) { done(); return; }
+    var L = el.getTotalLength(), t0 = null;
+    ship.classList.add('on');
+    function step(ts) {
+      if (!playing) return;
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / ms);
+      var d = rev ? L * (1 - p) : L * p;                 /* Rueckfahrt: von hinten nach vorn */
+      var q  = el.getPointAtLength(d);
+      var q2 = el.getPointAtLength(Math.max(0, Math.min(L, d + (rev ? -6 : 6))));
+      setShip(q.x, q.y, Math.atan2(q2.y - q.y, q2.x - q.x) * 180 / Math.PI);
+      if (p < 1) { raf = requestAnimationFrame(step); } else { done(); }
+    }
+    raf = requestAnimationFrame(step);
+  }
+  function stop() {
+    playing = false;
+    if (raf) cancelAnimationFrame(raf);
+    if (timer) clearTimeout(timer);
+    raf = timer = null;
+    ship.classList.remove('on');
+    playTxt.textContent = 'Reise abspielen';
+    playBtn.classList.remove('on');
+  }
+  function play() {
+    playing = true;
+    playBtn.classList.add('on');
+    playTxt.textContent = 'Anhalten';
+    clearLegs(); close(); reset();
+    var i = 0;
+    function at(k) {
+      if (!playing) return;
+      show(k, false);
+      timer = setTimeout(function () {
+        if (!playing) return;
+        if (k === 4) {                      /* Windschlauch: fast Ithaka -- und zurueckgeblasen */
+          var a = document.getElementById('leg-aiolos');
+          a.classList.add('lit');
+          sail('aiolos', reduce ? 1 : 2400, function () {
+            if (!playing) return;
+            timer = setTimeout(function () {
+              sail('aiolos', reduce ? 1 : 1100, function () {
+                if (!playing) return;
+                timer = setTimeout(function () { next(k); }, 500);
+              }, true);
+            }, 800);
+          });
+        } else { next(k); }
+      }, reduce ? 400 : 1500);
+    }
+    function next(k) {
+      if (!playing) return;
+      var n = k + 1;
+      if (n >= ST.length) { stop(); show(ST.length - 1, false); return; }
+      var leg = ST[n].leg;
+      litUpTo(n);
+      if (k === 7) {                      /* vom Okeanos zurueck nach Aiaia, dann zu den Sirenen */
+        sail('nekyia', reduce ? 1 : 1600, function () {
+          if (!playing) return;
+          sail(leg, reduce ? 1 : 1500, function () { at(n); });
+        }, true);
+        return;
+      }
+      sail(leg, reduce ? 1 : (leg === 'l1' ? 3400 : 1900), function () { at(n); });
+    }
+    at(0);
+  }
+  playBtn.addEventListener('click', function () { if (playing) { stop(); } else { play(); } });
+
+  apply();
+})();
+</script>
+</body>
+</html>
